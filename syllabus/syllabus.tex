@@ -147,14 +147,24 @@ Be professional and collaborative. This course is designed to be challenging. Th
 \noindent \textbf{Key dates:} Spring Break week is Mar 8--14 (no class Thu Mar 12). \\
 \noindent \textbf{Readings/videos:} Posted on Canvas; the ``application paper(s)'' is discussed during the last 30 minutes.
 
-\subsection*{Week 1: January 15, 2026 --- Course Overview \& What is ``Big Social Data''?}
+\subsection*{Week 01: January 15, 2026 --- Course Overview \& What is ``Big Social Data''?}
 \begin{itemize}\compresslist
 \item \textbf{Coding lab:} Course toolchain setup (Python/R environment, Git/GitHub, repo structure).
 \item \textbf{Application paper:} Lazer et al. (2009) ``Computational Social Science'' (Science) \emph{or} instructor-selected modern replication.
 \item \textbf{Pre-class video:} Workflow overview + reproducible project scaffolding.
 \end{itemize}
 
-\subsection*{Week 2: January 22, 2026 --- The Web as Data (Scraping \& HTML)}
+
+
+\subsection*{Week 02: January 22, 2026 --- Reproducibility: Git, Containers, and Research Artifacts}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Git branching; pull requests; Docker/containers; environment capture; data documentation.
+\item \textbf{Application paper:} Heath, Davidson, et al. (2023) The Journal of Finance
+\item \textbf{Application paper:} Holzmeister,et al. (2025) Nature Human Behaviour
+\item \textbf{Pre-class video:} Reproducible pipelines end-to-end.
+\end{itemize}
+
+\subsection*{Week 03: January 29, 2026 --- The Web as Data (Scraping \& HTML)}
 \begin{itemize}\compresslist
 \item \textbf{Coding lab:} Scraping with \texttt{BeautifulSoup}/\texttt{requests} (Python) or \texttt{rvest} (R); respectful scraping; pagination.
 \item \textbf{Application paper:} Brown et al. (2025) Big Data and Society.
@@ -162,7 +172,41 @@ Be professional and collaborative. This course is designed to be challenging. Th
 \item \textbf{Pre-class video:} Web scrapping overview.
 \end{itemize}
 
-\subsection*{Week 3: January 29, 2026 --- APIs, Rate Limits, and Data Collection at Scale}
+
+\subsection*{Week 04: February 5, 2026 --- Text as Data Pipelines}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Tokenization; embeddings; topic models; basic transformer workflow (lightweight).
+\item \textbf{Application paper:} Alsarra et al. (2025) Computational and Mathematical Organization Theory
+\item \textbf{Application paper:} Burnham et al. (2025) Political Analysis
+\item \textbf{Pre-class video:} Practical text pipeline architecture.
+\end{itemize}
+
+
+\subsection*{Week 05: February 12, 2026 --- RCTs and Large Experiments (Design + Implementation at Scale)}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Randomization checks; blocking/stratification; power; clustered designs; analysis of ATE; logging and reproducibility for large experiments.
+\item \textbf{Application paper:} Instructor-selected large-scale field or platform experiment (to be posted on Canvas).
+\item \textbf{Application paper:} Bond et al. (2012) Nature; Allcott et al. (2020) AER.
+\item \textbf{Pre-class video:} RCT design basics + practical issues at scale (interference, spillovers, compliance, clustered assignment).
+\end{itemize}
+
+
+\subsection*{Week 06: February 19, 2026 --- Time Series Analyses for Social Data}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Time-indexed data cleaning; temporal splits; forecasting vs causal timing; ARIMA/ETS baselines; evaluation under temporal cross-validation.
+\item \textbf{Application paper:} Chen et al. (2022) PA; Park and Yamauchi (2022) PA.
+\item \textbf{Pre-class video:} Time series workflow design + leakage pitfalls (temporal validation, rolling windows, backtesting).
+\end{itemize}
+
+\subsection*{Week 07: February 26, 2026 --- LLM-Assisted Data Extraction (Human-in-the-Loop)}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Structured extraction from messy text using LLMs; prompt design for schemas; batch processing; uncertainty checks; human validation/spot-audits; documenting failure modes.
+\item \textbf{Application paper:} Gilardi et al. (2023) PNAS
+\item \textbf{Application paper:} Heseltine, M. \& Bernhard Clemm von Hohenberg. (2024) Research \& Politics
+\item \textbf{Pre-class video:} LLM extraction patterns + evaluation (precision/recall, auditing).
+\end{itemize}
+
+\subsection*{Week 08: March 5, 2026 --- APIs, Rate Limits, and Data Collection at Scale}
 \begin{itemize}\compresslist
 \item \textbf{Coding lab:} API auth; pagination; retries; logging; storing raw JSON.
 \item \textbf{Application paper:} Bail et al. (2018) PNAS
@@ -170,15 +214,28 @@ Be professional and collaborative. This course is designed to be challenging. Th
 \item \textbf{Pre-class video:} API design patterns + data provenance.
 \end{itemize}
 
-\subsection*{Week 4: February 5, 2026 --- Surveys, Platforms, and Crowdsourcing}
+
+\subsection*{March 12, 2026 --- No Class (Spring Break Week)} 
+
+\subsection*{Week 09: March 19, 2026 --- Data Quality, Labeling, and Validation}
 \begin{itemize}\compresslist
-\item \textbf{Coding lab:} Survey exports; cleaning; codebooks; labeling; quality checks.
-\item \textbf{Application paper:} Berinsky et al. (2012) Political Analysis
-\item \textbf{Application paper:} Bisbee (2024) Political Analysis
-\item \textbf{Pre-class video:} Data quality, missingness, and measurement in platform data.
+\item \textbf{Coding lab:} Validation checks; inter-coder reliability; basic monitoring; documenting limitations.
+\item \textbf{Application paper:} Lazer et al. (2014) Science
+\item \textbf{Application paper:} Parkinson, S. (2024) APSR
+\item \textbf{Application paper:} Sales et al. (2022) Applied Geography
+\item \textbf{Pre-class video:} Validity threats in big social data.
 \end{itemize}
 
-\subsection*{Week 5: February 12, 2026 --- Databases \& SQL for Social Data}
+\subsection*{Week 10: March 26, 2026 --- Spatial Data, GIS, and Remote Sensing}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} \texttt{sf}/\texttt{GeoPandas}; joins; rasters; mapping; basic spatial features.
+\item \textbf{Application paper:} Harari, M. (2020) AER
+\item \textbf{Application paper:} Panagopoulos et al. (2023) Land
+\item \textbf{Pre-class video:} Spatial data formats + coordinate systems.
+\end{itemize}
+
+
+\subsection*{Week 11: April 2, 2026 --- Databases \& SQL for Social Data}
 \begin{itemize}\compresslist
 \item \textbf{Coding lab:} SQL basics; schema design; indexes; joins; using \texttt{duckdb}/\texttt{sqlite}; query from Python/R.
 \item \textbf{Application paper:} Baumgartner et al. (2020) Proceedings of the international AAAI conference on web and social media.
@@ -186,7 +243,15 @@ Be professional and collaborative. This course is designed to be challenging. Th
 \item \textbf{Pre-class video:} Relational thinking + query optimization basics.
 \end{itemize}
 
-\subsection*{Week 6: February 19, 2026 --- Record Linkage and Entity Resolution}
+\subsection*{Week 12: April 9, 2026 --- Network Data \& Graph Workflows}
+\begin{itemize}\compresslist
+\item \textbf{Coding lab:} Graph construction; centrality; community detection; scalability tips.
+\item \textbf{Application paper:} Minhas, S \& P. Hoff (2025) Political Analysis
+\item \textbf{Application paper:} Olivella et al. (2022) JAS
+\item \textbf{Pre-class video:} Network representation choices and pitfalls.
+\end{itemize}
+
+\subsection*{Week 13: March 26, 2026 --- Record Linkage and Entity Resolution}
 \begin{itemize}\compresslist
 \item \textbf{Coding lab:} String distances; blocking; probabilistic linkage; evaluation.
 \item \textbf{Application paper:} Ornstein, J. (2025) Political Analysis
@@ -196,70 +261,27 @@ Be professional and collaborative. This course is designed to be challenging. Th
 \item \textbf{Milestone:} Final project proposal due.
 \end{itemize}
 
-\subsection*{Week 7: February 26, 2026 --- Text as Data Pipelines}
+
+
+
+\subsection*{Week 14: March 23, 2026 --- Surveys, Platforms, and Crowdsourcing}
 \begin{itemize}\compresslist
-\item \textbf{Coding lab:} Tokenization; embeddings; topic models; basic transformer workflow (lightweight).
-\item \textbf{Application paper:} Alsarra et al. (2025) Computational and Mathematical Organization Theory
-\item \textbf{Application paper:} Burnham et al. (2025) Political Analysis
-\item \textbf{Pre-class video:} Practical text pipeline architecture.
+\item \textbf{Coding lab:} Survey exports; cleaning; codebooks; labeling; quality checks.
+\item \textbf{Application paper:} Berinsky et al. (2012) Political Analysis
+\item \textbf{Application paper:} Bisbee (2024) Political Analysis
+\item \textbf{Pre-class video:} Data quality, missingness, and measurement in platform data.
 \end{itemize}
 
-\subsection*{Week 8: March 5, 2026 --- Network Data \& Graph Workflows}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Graph construction; centrality; community detection; scalability tips.
-\item \textbf{Application paper:} Minhas, S \& P. Hoff (2025) Political Analysis
-\item \textbf{Application paper:} Olivella et al. (2022) JAS
-\item \textbf{Pre-class video:} Network representation choices and pitfalls.
-\end{itemize}
 
-\subsection*{March 12, 2026 --- \textit{No Class (Spring Break Week)}} 
 
-\subsection*{Week 9: March 19, 2026 --- Spatial Data, GIS, and Remote Sensing}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} \texttt{sf}/\texttt{GeoPandas}; joins; rasters; mapping; basic spatial features.
-\item \textbf{Application paper:} Harari, M. (2020) AER
-\item \textbf{Application paper:} Panagopoulos et al. (2023) Land
-\item \textbf{Pre-class video:} Spatial data formats + coordinate systems.
-\end{itemize}
 
-\subsection*{Week 10: March 26, 2026 --- Reproducibility: Git, Containers, and Research Artifacts}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Git branching; pull requests; Docker/containers; environment capture; data documentation.
-\item \textbf{Application paper:} Heath, Davidson, et al. (2023) The Journal of Finance
-\item \textbf{Application paper:} Holzmeister,et al. (2025) Nature Human Behaviour
-\item \textbf{Pre-class video:} Reproducible pipelines end-to-end.
-\end{itemize}
 
-\subsection*{Week 11: April 2, 2026 --- Data Quality, Labeling, and Validation}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Validation checks; inter-coder reliability; basic monitoring; documenting limitations.
-\item \textbf{Application paper:} Lazer et al. (2014) Science
-\item \textbf{Application paper:} Parkinson, S. (2024) APSR
-\item \textbf{Application paper:} Sales et al. (2022) Applied Geography
-\item \textbf{Pre-class video:} Validity threats in big social data.
-\end{itemize}
 
-\subsection*{Week 12: April 9, 2026 --- LLM-Assisted Data Extraction (Human-in-the-Loop)}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Structured extraction from messy text using LLMs; prompt design for schemas; batch processing; uncertainty checks; human validation/spot-audits; documenting failure modes.
-\item \textbf{Application paper:} Gilardi et al. (2023) PNAS
-\item \textbf{Application paper:} Heseltine, M. \& Bernhard Clemm von Hohenberg. (2024) Research \& Politics
-\item \textbf{Pre-class video:} LLM extraction patterns + evaluation (precision/recall, auditing).
-\end{itemize}
 
-\subsection*{Week 13: April 16, 2026 --- RCTs and Large Experiments (Design + Implementation at Scale)}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Randomization checks; blocking/stratification; power; clustered designs; analysis of ATE; logging and reproducibility for large experiments.
-\item \textbf{Application paper:} Instructor-selected large-scale field or platform experiment (to be posted on Canvas).
-\item \textbf{Application paper:} Bond et al. (2012) Nature; Allcott et al. (2020) AER.
-\item \textbf{Pre-class video:} RCT design basics + practical issues at scale (interference, spillovers, compliance, clustered assignment).
-\end{itemize}
-\subsection*{Week 14: April 23, 2026 --- Time Series Analyses for Social Data}
-\begin{itemize}\compresslist
-\item \textbf{Coding lab:} Time-indexed data cleaning; temporal splits; forecasting vs causal timing; ARIMA/ETS baselines; evaluation under temporal cross-validation.
-\item \textbf{Application paper:} Chen et al. (2022) PA; Park and Yamauchi (2022) PA.
-\item \textbf{Pre-class video:} Time series workflow design + leakage pitfalls (temporal validation, rolling windows, backtesting).
-\end{itemize}
+
+
+
+
 \subsection*{Week 15: April 30, 2026 --- Student Project Presentations \& Wrap-Up}
 \begin{itemize}\compresslist
 \item \textbf{Deliverable:} 20 minute presentation + demo of repo/pipeline.
