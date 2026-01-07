@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+
+% --- Layout / styling ---
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\singlespacing
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=psublue, urlcolor=psublue, citecolor=psublue}
+
+% Optional (only if you want citations)
+\usepackage{natbib}
+\setcitestyle{aysep={,}}
+\renewcommand{\bibsection}{}
+
+\usepackage{enumitem}
+
+% Define Penn State Blue (Hex: #001E44) + a near-black gray
+\definecolor{psublue}{HTML}{001E44}
+\definecolor{verydarkgray}{RGB}{20,20,20}
+
+\begin{document}
+
+% --- Header block ---
+\noindent \textcolor{psublue}{\Large{\textbf{Memo Title Goes Here}}}\\
+\textcolor{gray}{\rule{\linewidth}{1mm}}\vspace{0.25cm}
+
+\noindent \textbf{Author:} Your Name \hfill \textbf{Date:} \today\\
+\noindent \textbf{Course/Project:} Course Name or Project Name\\
+\vspace{0.75em}
+
+% --- Purpose / TL;DR ---
+\noindent \textcolor{psublue}{\textbf{Purpose / TL;DR}}\\
+Write 3--6 sentences summarizing the memo's goal and the main takeaway.
+
+\vspace{0.75em}
+
+% --- Main content sections (edit as needed) ---
+\noindent \textcolor{psublue}{\textbf{Background and Context}}\\
+Provide the minimal background needed to understand the memo (1--2 short paragraphs).
+
+\vspace{0.75em}
+
+\noindent \textcolor{psublue}{\textbf{Key Points / Evidence}}\\
+\begin{itemize}[itemsep=2pt, topsep=2pt]
+  \item Point 1 (make a claim and support it).
+  \item Point 2 (data, figure, or citation if relevant).
+  \item Point 3 (limitations or scope conditions).
+\end{itemize}
+
+\vspace{0.75em}
+
+\noindent \textcolor{psublue}{\textbf{Method / Approach (if relevant)}}\\
+Explain your approach briefly. If you ran code, state what you did and what outputs were produced.
+
+\vspace{0.75em}
+
+\noindent \textcolor{psublue}{\textbf{Results}}\\
+Summarize results clearly. If you include figures/tables, reference them here.
+
+\vspace{0.75em}
+
+\noindent \textcolor{psublue}{\textbf{Implications / Discussion}}\\
+Explain what the results imply for the broader research question or social-science application.
+
+\vspace{0.75em}
+
+\noindent \textcolor{psublue}{\textbf{Next Steps}}\\
+\begin{enumerate}[itemsep=2pt, topsep=2pt]
+  \item Next step 1.
+  \item Next step 2.
+  \item Next step 3.
+\end{enumerate}
+
+% --- Optional references ---
+% If you don't need citations, delete everything below this line.
+\vspace{0.75em}
+\noindent \textcolor{psublue}{\textbf{References}}\\
+{\small
+\bibliographystyle{apalike}
+% \bibliography{your_bib_file} % Uncomment if using a .bib file
+}
+
+\end{document}

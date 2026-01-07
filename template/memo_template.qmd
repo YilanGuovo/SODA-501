@@ -1,0 +1,61 @@
+---
+title: "Memo Title Goes Here"
+author: "Your Name"
+date: today
+format:
+  html:
+    toc: false
+    theme: cosmo
+    fontsize: 11pt
+  pdf:
+    toc: false
+    fontsize: 11pt
+    geometry: margin=1in
+    colorlinks: true
+    linkcolor: "001E44"
+    urlcolor: "001E44"
+    citecolor: "001E44"
+bibliography: references.bib   # optional
+csl: apa.csl                  # optional
+---
+
+```{=tex}
+% Optional: PSU-blue header styling for PDF output
+\definecolor{psublue}{HTML}{001E44}
+```
+
+```{=html}
+<style>
+:root { --psublue: #001E44; }
+.memo-h { color: var(--psublue); font-weight: 700; margin-top: 1.1rem; }
+</style>
+```
+
+# Purpose / TL;DR { .memo-h }
+Write 3–6 sentences summarizing the memo’s goal and the main takeaway.
+
+# Background and Context { .memo-h }
+Provide the minimal background needed to understand the memo (1–2 short paragraphs).
+
+# Key Points / Evidence { .memo-h }
+- Point 1 (claim + support).
+- Point 2 (data/figure/citation if relevant).
+- Point 3 (limitations or scope conditions).
+
+# Method / Approach (if relevant) { .memo-h }
+Explain your approach briefly. If you ran code, state what you did and what outputs were produced.
+
+# Results { .memo-h }
+Summarize results clearly. If you include figures/tables, reference them here.
+
+# Implications / Discussion { .memo-h }
+Explain what the results imply for the broader research question or social-science application.
+
+# Next Steps { .memo-h }
+1. Next step 1.
+2. Next step 2.
+3. Next step 3.
+
+# References { .memo-h }
+::: {#refs}
+:::
