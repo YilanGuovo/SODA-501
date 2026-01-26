@@ -68,6 +68,8 @@
 #     git remote add origin <YOUR_REPO_URL>
 ###############################################################################
 
+setwd("D:/Yilan/1/Courses/SODA/501/soda_501/02_reproducibility/demo")
+
 # -----------------------------------------------------------------------------
 # Setup
 # -----------------------------------------------------------------------------
@@ -99,6 +101,12 @@ library(broom)      # Tidy regression outputs (for tables)
 # - processed data (cleaned outputs)
 # - figures and tables (final outputs)
 
+#-----------------------------------------------------------------------------------------------
+
+#dir.create() to create folders
+#recursive = TRUE: if data doesn't exist, first create data then create raw.
+#recursive = FALSE: send false message.
+#showWarning = TRUE, if folders already exist, show warnings.
 dir.create("data/raw", recursive = TRUE, showWarnings = FALSE)
 dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
 dir.create("outputs/figures", recursive = TRUE, showWarnings = FALSE)
@@ -111,7 +119,11 @@ dir.create("outputs/tables", recursive = TRUE, showWarnings = FALSE)
 # - Where outputs were written
 
 logger::log_threshold(DEBUG)
-logger::log_appender(appender_file("analysis_log.txt"))
+logger::log_appender(appender_file("analysis_log.txt")) #write log data in "XX" file
+
+
+
+#-----------------------------------------------------------------------------------------------
 
 # Pipeline overview:
 #   1) Load data
@@ -129,6 +141,8 @@ log_info("Starting analysis pipeline")
 # Expected location for this assignment:
 # - data/raw/education_income.csv
 
+education_income_raw <- readr::read_csv("data/raw/education_income.csv", show_col_types = FALSE)
+
 log_info("Loading education/income dataset from data/raw/education_income.csv")
 
 
@@ -141,6 +155,9 @@ log_info(paste("Columns loaded:", ncol(education_income_raw)))
 log_info("Saving raw data copy (unchanged)")
 # readr::write_csv(education_income_raw, "data/raw/education_income.csv")
 
+
+#---------------------------------------------------------------------------------------------------------
+
 # Keep this simple and explicit:
 # - Ensure education and income exist
 # - Coerce to numeric (if needed)
@@ -149,6 +166,13 @@ log_info("Saving raw data copy (unchanged)")
 # Note: No if/else. If columns are missing, the script will error (which is fine).
 
 log_info("Cleaning education/income data")
+
+#"|>" is the base R pipe:
+# it takes the data on the left and passes it to the function on the right
+# mutate() is used to modify existing columns or create new ones
+# as.numeric() turns values into numbers; If a value cannot be converted, it becomes NA
+# filter() keeps rows that satisfy the conditions
+# !is.na(education) means: education is NOT missing
 
 education_income_clean <- education_income_raw |>
   dplyr::mutate(
@@ -159,7 +183,8 @@ education_income_clean <- education_income_raw |>
 
 log_info(paste("Rows after cleaning:", nrow(education_income_clean)))
 
-# Create log-income version for Model 3
+
+# Create log-income version for Model 3----------------------------------------------------
 # If income has zeros or negatives, log(income) is not finite.
 education_income_clean <- education_income_clean |>
   dplyr::mutate(log_income = log(income))
@@ -173,27 +198,88 @@ log_info("Saving processed data")
 readr::write_csv(education_income_clean, "data/processed/cleaned_education_income.csv")
 
 
+
+#regression---------------------------------------------------------------------------------
 log_info("Fitting Model 1: income ~ education")
-# TODO: model_1 <- ...
+model_1 <- lm(income ~ education, data = education_income_clean)
 
 log_info("Fitting Model 2: income ~ education + I(education^2)")
-# TODO: model_2 <- ...
+model_2 <- lm(income ~ education + I(education^2), data = education_income_clean)
 
 log_info("Fitting Model 3: log(income) ~ education (finite log income rows only)")
-# TODO: model_3 <- ...
+model_3 <- lm(log(income) ~ education, data = education_income_log)
 
 # Save model summaries (plain text) for replication checks
 log_info("Saving regression summaries to outputs/tables/")
-# TODO: writeLines(capture.output(summary(model_1)), "outputs/tables/model_1_summary.txt")
-# TODO: writeLines(capture.output(summary(model_2)), "outputs/tables/model_2_summary.txt")
-# TODO: writeLines(capture.output(summary(model_3)), "outputs/tables/model_3_summary.txt")
-# TODO: create and write a regression_coefficients.csv table
 
-# TODO (students):
+#save model output to text files
+writeLines(capture.output(summary(model_1)), "outputs/tables/model_1_summary.txt")
+writeLines(capture.output(summary(model_2)), "outputs/tables/model_2_summary.txt")
+writeLines(capture.output(summary(model_3)), "outputs/tables/model_3_summary.txt")
+
+#create and write a regression_coefficients.csv table
+regression_coefficients <- bind_rows(
+  tidy(model_1) |> mutate(model = "model_1"),
+  tidy(model_2) |> mutate(model = "model_2"),
+  tidy(model_3) |> mutate(model = "model_3")
+) |>
+  relocate(model) #put model at the first column
+
+write_csv(regression_coefficients, "outputs/tables/regression_coefficients.csv")
+
+
+#Plots-------------------------------------------------------------------------------
+
+library(ggplot2)
+
+log_info("Creating fitted plots for Models 1–3")
+
+p1 <- ggplot(education_income_clean, aes(x = education, y = income)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Model 1: Linear relationship",
+    x = "Education",
+    y = "Income"
+  )
+
+p2 <- ggplot(education_income_clean, aes(x = education, y = income)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = FALSE
+  ) +
+  labs(
+    title = "Model 2: Quadratic relationship",
+    x = "Education",
+    y = "Income"
+  )
+
+p3 <- ggplot(education_income_log, aes(x = education, y = log(income))) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Model 3: Log income vs education",
+    x = "Education",
+    y = "Log income"
+  )
+
+ggsave("outputs/figures/model1_fit.png", plot = p1, width = 6, height = 4)
+ggsave("outputs/figures/model2_fit.png", plot = p2, width = 6, height = 4)
+ggsave("outputs/figures/model3_fit.png", plot = p3, width = 6, height = 4)
+
+log_info("Saved model fit plots to outputs/figures/")
+
+
+#------------------------------------------------------------------------------------
 # - Write sessionInfo() output to outputs/session_info.txt
+writeLines(
+  capture.output(sessionInfo()),
+  "outputs/session_info.txt"
+)
 
 log_info("Saving session information")
-# TODO: writeLines(capture.output(sessionInfo()), "outputs/session_info.txt")
 
 
 # TODO (students):

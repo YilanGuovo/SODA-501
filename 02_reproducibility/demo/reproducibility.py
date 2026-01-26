@@ -1,4 +1,4 @@
-###############################################################################
+·········###############################################################################
 # Reproducible Analysis (Python)
 # Author: Jared Edgerton
 # Date: (fill in)
@@ -107,10 +107,10 @@ logging.info("os/platform summary: " + str(platform.platform()))
 # - processed data (cleaned outputs)
 # - figures and tables (final outputs)
 
-os.makedirs("data/raw", exist_ok=True)
-os.makedirs("data/processed", exist_ok=True)
-os.makedirs("outputs/figures", exist_ok=True)
-os.makedirs("outputs/tables", exist_ok=True)
+os.makedirs(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demodata/raw", exist_ok=True)
+os.makedirs(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demodata/processed", exist_ok=True)
+os.makedirs(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demooutputs/figures", exist_ok=True)
+os.makedirs(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demooutputs/tables", exist_ok=True)
 
 # Logging creates an audit trail:
 # - What ran
@@ -142,7 +142,7 @@ logging.info("Starting analysis pipeline")
 
 logging.info("Loading education/income dataset from data/raw/education_income.csv")
 
-education_income_raw = pd.read_csv("data/raw/education_income.csv")
+education_income_raw = pd.read_csv(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demodata\raw/education_income.csv")
 
 logging.info("Rows loaded: " + str(education_income_raw.shape[0]))
 logging.info("Columns loaded: " + str(education_income_raw.shape[1]))
@@ -180,7 +180,7 @@ education_income_log = education_income_log.dropna(subset=["log_income"])
 logging.info("Rows with finite log(income): " + str(education_income_log.shape[0]))
 
 logging.info("Saving processed data")
-education_income_clean.to_csv("data/processed/cleaned_education_income.csv", index=False)
+education_income_clean.to_csv(r"D:\Yilan\1\Courses\SODA\501\reproducibility\soda_501\02_reproducibility\demodata/processed/cleaned_education_income.csv", index=False)
 
 logging.info("Fitting Model 1: income ~ education")
 # TODO: model_1 = ...
