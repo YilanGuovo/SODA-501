@@ -1,0 +1,4 @@
+The renv function helps capture dependency versions in reproducible research. 
+The function renv.lock stores the exact versions of all R packages used in the analysis. 
+The function renv::restore() recreates the same package environment on a new computer.
+Without sharing dependency versions, even running the same code may produce different results due to different versions of package used. 
