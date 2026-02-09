@@ -1,0 +1,21 @@
+2. 
+
+Bag-of-words represents text by top word frequency, so it is easy to understand and explain. Embeddings represent text as numbers that capture meaning, but they are hard to interpret. Bag-of-words is useful when we care about topics/theme interpretation, such as studying topics or framing in news. Embeddings are better for prediction and classification, such as classifying movie genres or social media posts.
+
+
+4. LDA
+
+Topic 0 includes words such as father, mother, family, and house, suggesting stories about family life and everyday relationships. Topic 3 seems to be war-related, with keywords such as war, army, and killed, which point to conflict and survival themes.
+Preprocessing choices strongly affect topic quality. If stop words are not removed, common words like "and," "is," "to" may appear in many topics, which is meaningless. In addition, setting min_df helps remove rare words that appear in very few documents, which reduces noise and improves topic interpretability.
+
+
+5. Word embedding regression:
+
+It turns each movie plot into a numeric vector that summarizes its overall meaning, and then use these vectors to predict the outcome variable with a regression model. This allows the model to learn whether certain types of language are associated with the outcome. One limitation of this approach is that the model can be hard to interpret, because the embedding dimensions don't have clear meanings. Another limitation is that generating information using the entire document may lose important dynamics.
+
+Note: The SentenceTransformer was used as a alternative to Word2Vec in Python 3.14.
+
+
+7. Extension
+
+The confusion matrix shows that the model performs best on Comedy and Drama. But many other movies are also misclassified as Comedy or Drama. This may be because that genre boundaries themselves are not fully distinctive and that some genres share similar language patterns.

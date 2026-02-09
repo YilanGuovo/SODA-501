@@ -1,0 +1,6 @@
+,pred_action,pred_comedy,pred_drama,pred_horror,pred_other
+true_action,14,4,10,0,6
+true_comedy,5,33,13,0,7
+true_drama,6,19,34,0,0
+true_horror,1,1,6,0,2
+true_other,5,16,11,0,7

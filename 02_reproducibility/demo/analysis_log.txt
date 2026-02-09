@@ -10,6 +10,8 @@ INFO [2026-01-25 22:25:23] Fitting Model 1: income ~ education
 INFO [2026-01-25 22:25:25] Fitting Model 2: income ~ education + I(education^2)
 INFO [2026-01-25 22:26:32] Fitting Model 3: log(income) ~ education (finite log income rows only)
 INFO [2026-01-25 22:26:49] Saving regression summaries to outputs/tables/
-INFO [2026-01-25 22:46:09] Saving session information
-INFO [2026-01-25 22:50:28] Snapshotting dependencies to renv.lock
-INFO [2026-01-25 22:56:00] Analysis pipeline completed successfully
+INFO [2026-01-25 23:21:05] Creating fitted plots for Models 1–3
+INFO [2026-01-25 23:21:10] Saved model fit plots to outputs/figures/
+INFO [2026-01-25 23:22:11] Saving session information
+INFO [2026-01-25 23:22:13] Snapshotting dependencies to renv.lock
+INFO [2026-01-25 23:22:15] Analysis pipeline completed successfully

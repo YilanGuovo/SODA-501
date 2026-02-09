@@ -1,0 +1,72 @@
+
+Topic 0:
+  film            149.83
+  michael         143.53
+  john            140.55
+  father          123.30
+  house           122.80
+  time            108.35
+  life            97.07
+  mother          90.61
+  family          87.55
+  man             78.98
+
+Topic 1:
+  love            186.39
+  father          169.83
+  film            157.51
+  life            157.07
+  man             133.32
+  tells           115.51
+  family          115.35
+  girl            106.00
+  day             98.26
+  son             97.39
+
+Topic 2:
+  police          167.42
+  paul            142.80
+  new             110.23
+  goes            94.11
+  gets            91.87
+  time            91.15
+  home            89.76
+  father          88.09
+  later           86.72
+  tells           86.43
+
+Topic 3:
+  town            86.73
+  war             83.43
+  army            75.24
+  men             73.29
+  killed          63.44
+  later           58.88
+  begins          58.62
+  escape          57.40
+  time            54.46
+  help            53.80
+
+Topic 4:
+  anne            104.93
+  tells           71.27
+  car             70.00
+  goes            65.20
+  man             64.83
+  mike            59.51
+  mother          58.48
+  police          57.58
+  johnny          56.17
+  money           54.65
+
+Topic 5:
+  jerry           77.42
+  norman          68.17
+  max             59.49
+  tom             52.88
+  mary            51.79
+  carl            47.03
+  mother          42.36
+  dr              41.46
+  new             33.66
+  world           33.61

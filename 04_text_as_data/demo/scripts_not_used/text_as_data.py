@@ -42,18 +42,17 @@
 import os
 import re
 import random
-
+import tarfile
+import ast
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
-
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+import ast
 from gensim.models import Word2Vec
 
 # Reproducibility
@@ -68,86 +67,197 @@ os.makedirs("outputs", exist_ok=True)
 os.makedirs("src", exist_ok=True)
 
 # -----------------------------------------------------------------------------
-# Part 0: Create a small synthetic text dataset (for a self-contained tutorial)
+# Part 0: Load the CMU Movie Summary Corpus from MovieSummaries.tar.gz
 # -----------------------------------------------------------------------------
-# In a real pipeline, this would be where you load text data from a file/API/DB.
-# Example:
-#   df = pd.read_csv("data_raw/my_corpus.csv")
-#   docs = df["text"].tolist()
+# Expected archive location (based on your screenshot):
+#   04_text_as_data/demo/MovieSummaries.tar.gz
+#
+# This block:
+#   1) extracts the archive (if needed)
+#   2) loads plot summaries + metadata
+#   3) builds df with columns: doc_id, text, y_outcome, true_topic (optional)
+#
+# Teaching note:
+# - We keep this explicit (no helper functions) so students can follow every step.
+# -----------------------------------------------------------------------------
 
-topic_words_elections = [
-    "election", "vote", "turnout", "campaign", "candidate", "ballot", "district",
-    "polling", "primary", "debate", "incumbent", "swing", "party", "coalition"
-]
-topic_words_health = [
-    "health", "hospital", "vaccine", "clinic", "patient", "disease", "outbreak",
-    "public", "policy", "insurance", "treatment", "nurse", "doctor", "risk"
-]
-topic_words_misinformation = [
-    "misinformation", "platform", "social", "media", "bot", "rumor", "viral",
-    "network", "algorithm", "moderation", "content", "narrative", "false", "signal"
-]
-common_words = [
-    "study", "evidence", "analysis", "data", "method", "results", "model",
-    "effects", "estimate", "theory", "research", "observed"
-]
 
-docs = []
-true_topic = []
-y = []
 
-# We generate 300 short documents: 100 per topic
-# y is a synthetic "outcome" that depends on topic + random noise
-# (This is for the regression section later.)
+# 0.1 Paths
+archive_path = os.path.join("04_text_as_data", "demo", "MovieSummaries.tar.gz")
+extract_dir  = os.path.join("04_text_as_data", "demo", "MovieSummaries_extracted")
 
-for i in range(100):
-    # Elections docs
-    tokens = (
-        random.choices(topic_words_elections, k=random.randint(30, 45)) +
-        random.choices(common_words, k=random.randint(10, 20))
-    )
-    random.shuffle(tokens)
-    docs.append(" ".join(tokens))
-    true_topic.append("elections")
-    y.append(1.0 + np.random.normal(0, 0.5))
+os.makedirs(extract_dir, exist_ok=True)
 
-for i in range(100):
-    # Health docs
-    tokens = (
-        random.choices(topic_words_health, k=random.randint(30, 45)) +
-        random.choices(common_words, k=random.randint(10, 20))
-    )
-    random.shuffle(tokens)
-    docs.append(" ".join(tokens))
-    true_topic.append("health")
-    y.append(0.0 + np.random.normal(0, 0.5))
+print("\n--- Movie corpus: archive path ---")
+print(archive_path)
 
-for i in range(100):
-    # Misinformation docs
-    tokens = (
-        random.choices(topic_words_misinformation, k=random.randint(30, 45)) +
-        random.choices(common_words, k=random.randint(10, 20))
-    )
-    random.shuffle(tokens)
-    docs.append(" ".join(tokens))
-    true_topic.append("misinformation")
-    y.append(-1.0 + np.random.normal(0, 0.5))
+# 0.2 Extract (only if the expected files are not already present)
+# We will check for plot_summaries.txt and movie.metadata.tsv *somewhere* in extract_dir.
+# Because tar archives sometimes include a top-level folder, we’ll (a) list members,
+# then (b) extract all if needed.
 
-df = pd.DataFrame(
-    {
-        "doc_id": np.arange(1, len(docs) + 1),
-        "text": docs,
-        "true_topic": true_topic,
-        "y_outcome": y,
-    }
+need_extract = True
+for root, dirs, files in os.walk(extract_dir):
+    if ("plot_summaries.txt" in files) and ("movie.metadata.tsv" in files):
+        need_extract = False
+        break
+
+if need_extract:
+    print("\n--- Extracting MovieSummaries.tar.gz ---")
+    with tarfile.open(archive_path, "r:gz") as tar:
+        tar.extractall(path=extract_dir)
+    print("Extraction complete:", extract_dir)
+else:
+    print("\n--- Extraction skipped (files already present) ---")
+
+# 0.3 Locate the extracted files (they might be in a subfolder)
+plots_path = None
+meta_path  = None
+
+for root, dirs, files in os.walk(extract_dir):
+    if "plot_summaries.txt" in files:
+        plots_path = os.path.join(root, "plot_summaries.txt")
+    if "movie.metadata.tsv" in files:
+        meta_path = os.path.join(root, "movie.metadata.tsv")
+
+print("\n--- Located extracted files ---")
+print("plots_path:", plots_path)
+print("meta_path: ", meta_path)
+
+if plots_path is None or meta_path is None:
+    raise FileNotFoundError("Could not find plot_summaries.txt and/or movie.metadata.tsv after extraction.")
+
+# 0.4 Load plot summaries (tab-separated: wikipedia_movie_id \t plot_summary)
+plots = pd.read_csv(
+    plots_path,
+    sep="\t",
+    header=None,
+    names=["wikipedia_movie_id", "text"],
+    encoding="utf-8",
+    quoting=3,
+    on_bad_lines="skip"
 )
 
-print("\n--- Synthetic corpus preview ---")
-print(df.head())
-print("\n--- True topic distribution ---")
-print(df["true_topic"].value_counts())
+print("\n--- Plots loaded ---")
+print("plots shape:", plots.shape)
+print(plots.head())
 
-df.to_csv("data_raw/week_synthetic_corpus.csv", index=False)
+# 0.5 Load metadata (tab-separated, no header)
+# CMU metadata columns (by position) are commonly:
+# 0 wikipedia_movie_id
+# 1 freebase_movie_id
+# 2 movie_name
+# 3 release_date
+# 4 box_office_revenue
+# 5 runtime
+# 6 languages
+# 7 countries
+# 8 genres (dict-like string)
+meta = pd.read_csv(
+    meta_path,
+    sep="\t",
+    header=None,
+    encoding="utf-8",
+    quoting=3,
+    on_bad_lines="skip"
+)
+
+print("\n--- Metadata loaded ---")
+print("meta shape:", meta.shape)
+print(meta.head())
+
+# Name the key columns we’ll actually use
+meta = meta.rename(columns={
+    0: "wikipedia_movie_id",
+    2: "movie_name",
+    3: "release_date",
+    8: "genres_raw"
+})
+
+# Keep only the columns we care about (this reduces confusion for students)
+meta = meta[["wikipedia_movie_id", "movie_name", "release_date", "genres_raw"]]
+
+# 0.6 Merge plots + metadata
+df = plots.merge(meta, on="wikipedia_movie_id", how="left")
+
+print("\n--- Merged movie df ---")
+print("df shape:", df.shape)
+print(df[["wikipedia_movie_id", "movie_name", "release_date"]].head())
+
+# 0.7 Clean text (drop missing/very short summaries)
+df["text"] = df["text"].astype(str)
+df["text_len"] = df["text"].str.len()
+
+df = df[df["text_len"] >= 200].copy()   # keep reasonably informative plots
+df = df.dropna(subset=["text"]).copy()
+
+print("\n--- After filtering short plots ---")
+print("df shape:", df.shape)
+print(df["text_len"].describe())
+
+# 0.8 Create an outcome for the regression section (simple + interpretable)
+# Here: y_outcome = 1 if "Action" appears in the genres dict, else 0
+# genres_raw is often a dict-like string; we parse it with ast.literal_eval.
+
+y_outcome = []
+true_topic = []
+
+for g in df["genres_raw"].tolist():
+    # Default values if parsing fails
+    is_action = 0
+    topic_label = "other"
+
+    if isinstance(g, str) and len(g) > 0:
+        try:
+            g_dict = ast.literal_eval(g)   # dict of {freebase_genre_id: genre_name}
+            g_text = " ".join([str(v) for v in g_dict.values()]).lower()
+
+            if "action" in g_text:
+                is_action = 1
+                topic_label = "action"
+            elif "comedy" in g_text:
+                topic_label = "comedy"
+            elif "drama" in g_text:
+                topic_label = "drama"
+            elif "horror" in g_text:
+                topic_label = "horror"
+            else:
+                topic_label = "other"
+
+        except Exception:
+            # If genre parsing fails, keep defaults
+            pass
+
+    y_outcome.append(is_action)
+    true_topic.append(topic_label)
+
+df["y_outcome"] = y_outcome
+df["true_topic"] = true_topic
+
+print("\n--- Outcome + rough topic labels ---")
+print(df["y_outcome"].value_counts(dropna=False))
+print(df["true_topic"].value_counts().head(10))
+
+# 0.9 Optional: downsample for classroom runtime (BERTopic + embeddings can be heavy)
+# Keep it reproducible with seed=123.
+max_docs = 3000  # adjust (e.g., 800 for quick laptops, 3000 for your machine)
+if df.shape[0] > max_docs:
+    df = df.sample(n=max_docs, random_state=123).copy()
+
+# 0.10 Add doc_id and keep a clean set of columns for later steps
+df = df.reset_index(drop=True)
+df["doc_id"] = np.arange(1, df.shape[0] + 1)
+
+df = df[["doc_id", "wikipedia_movie_id", "movie_name", "release_date", "text", "true_topic", "y_outcome"]].copy()
+
+print("\n--- Final movie corpus preview ---")
+print(df.head())
+print("\n--- Corpus size ---")
+print(df.shape)
+
+df.to_csv("data_raw/week_movie_corpus.csv", index=False)
+
 
 # -----------------------------------------------------------------------------
 # Part 1: Tokenization + basic preprocessing
@@ -159,7 +269,7 @@ vectorizer = CountVectorizer(
     lowercase=True,
     stop_words="english",
     token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]+\b",  # words with >=2 letters
-    min_df=2
+    min_df=5
 )
 
 X_counts = vectorizer.fit_transform(df["text"])
@@ -217,7 +327,7 @@ df_lda.to_csv("data_processed/week_with_lda_topics.csv", index=False)
 topic_counts = df_lda["lda_topic"].value_counts().sort_index()
 plt.figure(figsize=(8, 4))
 plt.bar(topic_counts.index.astype(str), topic_counts.values)
-plt.title("LDA: Dominant Topic Counts (Synthetic Corpus)")
+plt.title("LDA: Dominant Topic Counts (Movie Plots)")
 plt.xlabel("Dominant topic")
 plt.ylabel("Number of documents")
 plt.tight_layout()
@@ -250,9 +360,21 @@ print(len(w2v.wv.index_to_key))
 
 doc_vectors = []
 for tokens in tokenized_docs:
-    vecs = w2v.wv[tokens]
-    doc_vec = vecs.mean(axis=0)
+    tokens_in_vocab = []
+    for t in tokens:
+        if t in w2v.wv:
+            tokens_in_vocab.append(t)
+
+    if len(tokens_in_vocab) == 0:
+        doc_vec = np.zeros(w2v.vector_size)
+    else:
+        vecs = w2v.wv[tokens_in_vocab]
+        doc_vec = vecs.mean(axis=0)
+
     doc_vectors.append(doc_vec)
+
+doc_vectors = np.vstack(doc_vectors)
+
 
 doc_vectors = np.vstack(doc_vectors)
 print("\n--- Document embedding matrix ---")
