@@ -1,0 +1,94 @@
+
+------------------------------
+Input corpus (first 5 docs)
+------------------------------
+    doc_id                                               text
+0  doc_001  Breaking: Thousands rallied in Santiago on 202...
+1  doc_002  On March 2nd, lawmakers passed the 'Clean Air ...
+2  doc_003  Election officials said voting will take place...
+3  doc_004  A 6.2 magnitude earthquake struck near the coa...
+4  doc_005  Witnesses described gunfire outside a nightclu...
+docs_df shape: (15, 2)
+
+------------------------------
+Loading tokenizer + model
+------------------------------
+Model: google/flan-t5-small
+Device: cpu
+
+------------------------------
+Running LOCAL LLM extraction (one doc at a time)
+------------------------------
+
+------------------------------
+Extracted records (first 5 rows)
+------------------------------
+    doc_id event_type event_date_iso  date_is_approximate country  \
+0  doc_001      other           None                False    None   
+1  doc_002      other           None                False    None   
+2  doc_003      other           None                False    None   
+3  doc_004      other           None                False    None   
+4  doc_005      other           None                False    None   
+
+  admin1_or_state city_or_local geo_precision actors outcome_summary  \
+0            None          None       unknown     []            None   
+1            None          None       unknown     []            None   
+2            None          None       unknown     []            None   
+3            None          None       unknown     []            None   
+4            None          None       unknown     []            None   
+
+   extraction_confidence                                           raw_text  \
+0                    0.0  Breaking: Thousands rallied in Santiago on 202...   
+1                    0.0  On March 2nd, lawmakers passed the 'Clean Air ...   
+2                    0.0  Election officials said voting will take place...   
+3                    0.0  A 6.2 magnitude earthquake struck near the coa...   
+4                    0.0  Witnesses described gunfire outside a nightclu...   
+
+                              local_model_raw_output  parse_ok  \
+0                                                        False   
+1                                                        False   
+2  election officials said voting will take place...     False   
+3                                                6.2     False   
+4  witnesses described gunfire outside a nightclu...     False   
+
+                                         parse_error  \
+0  1 validation error for EventExtraction\n  Inva...   
+1  1 validation error for EventExtraction\n  Inva...   
+2  1 validation error for EventExtraction\n  Inva...   
+3  1 validation error for EventExtraction\n  Inpu...   
+4  1 validation error for EventExtraction\n  Inva...   
+
+                                       evidence_json  \
+0  [{"field": "event_type", "quote": ""}, {"field...   
+1  [{"field": "event_type", "quote": ""}, {"field...   
+2  [{"field": "event_type", "quote": ""}, {"field...   
+3  [{"field": "event_type", "quote": ""}, {"field...   
+4  [{"field": "event_type", "quote": ""}, {"field...   
+
+                uncertainty_flags_json  
+0  ["parse_failed_local_model_output"]  
+1  ["parse_failed_local_model_output"]  
+2  ["parse_failed_local_model_output"]  
+3  ["parse_failed_local_model_output"]  
+4  ["parse_failed_local_model_output"]  
+extractions_df shape: (15, 17)
+
+------------------------------
+Review flag counts
+------------------------------
+flag_parse_failed       15
+flag_low_confidence     15
+flag_missing_date       15
+flag_missing_country    15
+flag_geo_unknown        15
+needs_human_review      15
+dtype: int64
+
+------------------------------
+Wrote outputs/human_audit_sheet.csv
+------------------------------
+Parse failures: 15
+0.0
+Series([], Name: count, dtype: int64)
+
+Pipeline finished successfully.

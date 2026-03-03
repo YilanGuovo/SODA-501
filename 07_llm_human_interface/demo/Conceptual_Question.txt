@@ -1,0 +1,3 @@
+Question 2
+
+Schema-constrained extraction reduces hallucination because the model must fill fixed JSON fields instead of writing free text. It can only choose predefined options like without making up its own. If information is missing, the rules tell the model to use null instead of guessing. However, free-form summarization gives the model more freedom, which increases the chance of inventing incorrect information. One limitation could be that the chosen label may not always reflect what it actually is. For example, it might label a protest as violence. But it is not always the truth.

@@ -16,6 +16,8 @@
 # ---------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------
+
+# %%
 import os
 import json
 import re
@@ -31,7 +33,7 @@ from pydantic import BaseModel, Field
 
 from sklearn.metrics import classification_report
 
-from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, set_seed
 
 np.random.seed(123)
 set_seed(123)
@@ -62,29 +64,21 @@ class EvidenceSpan(BaseModel):
 class EventExtraction(BaseModel):
     doc_id: str
 
-    # NOTE (teaching/demo setting):
-    # For local small models, strict JSON/schema enforcement often yields empty outputs.
-    # We therefore provide safe defaults so the pipeline can produce "messy but usable"
-    # records while still flagging uncertainty. In a production setting, tighten these
-    # requirements and fail fast.
-
-    event_type: EventType = "other"
-
+    event_type: EventType
     event_date_iso: Optional[str] = Field(
         default=None,
         description="ISO date YYYY-MM-DD if available; otherwise null."
     )
     date_is_approximate: bool = Field(
-        default=True,
         description="True if the date is estimated/inferred (e.g., 'early April')."
     )
 
     country: Optional[str] = None
     admin1_or_state: Optional[str] = None
     city_or_local: Optional[str] = None
-    geo_precision: GeoPrecision = "unknown"
+    geo_precision: GeoPrecision
 
-    actors: List[str] = Field(default_factory=list, description="Key actors mentioned (individuals, orgs, groups).")
+    actors: List[str] = Field(description="Key actors mentioned (individuals, orgs, groups).")
 
     outcome_summary: Optional[str] = Field(
         default=None,
@@ -92,18 +86,15 @@ class EventExtraction(BaseModel):
     )
 
     extraction_confidence: float = Field(
-        default=0.2, ge=0.0, le=1.0,
+        ge=0.0, le=1.0,
         description="Model self-rated confidence (0 to 1)."
     )
     uncertainty_flags: List[str] = Field(
-        default_factory=list,
         description="List of issues that make extraction uncertain (e.g., missing date, vague location)."
     )
     evidence: List[EvidenceSpan] = Field(
-        default_factory=list,
-        description="Short quotes supporting each extracted field (if available)."
+        description="Short quotes supporting key fields."
     )
-
 
 # ---------------------------------------------------------------------
 # Part 2: Create Messy Text Inputs (Mini Corpus)
@@ -161,39 +152,24 @@ json_template = {
 
 system_instructions = (
     "Task: Extract ONE event record from the text.\n"
-    "Return EXACTLY the following 9 lines, one per line, in the format key: value\n"
-    "Use empty value if unknown.\n"
-    "\n"
-    "event_type: protest|election|policy_change|violence|disaster|other\n"
-    "event_date_iso: YYYY-MM-DD\n"
-    "date_is_approximate: true|false\n"
-    "country:\n"
-    "admin1_or_state:\n"
-    "city_or_local:\n"
-    "geo_precision: country_only|admin1_or_state|city_or_local|unknown\n"
-    "actors: comma-separated list\n"
-    "outcome_summary: one sentence\n"
-    "\n"
-    "Do not output anything else.\n"
+    "Output MUST be valid JSON only (no markdown, no extra text).\n"
+    "Allowed event_type: protest, election, policy_change, violence, disaster, other.\n"
+    "Allowed geo_precision: country_only, admin1_or_state, city_or_local, unknown.\n"
+    "If unknown: use null for optional fields, add an uncertainty flag, and lower extraction_confidence.\n"
+    "Evidence quotes must be short substrings copied from the text.\n"
 )
 
 # ---------------------------------------------------------------------
 # Part 4: Local LLM Structured Extraction (Batch Processing)
 # ---------------------------------------------------------------------
 # Model choice: small, free, runs on CPU (slow but fine for class demos)
-model_name = "Qwen/Qwen2.5-1.5B-Instruct"
+model_name = "google/flan-t5-small"
 
 print("\n------------------------------")
 print("Loading tokenizer + model")
 print("------------------------------")
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
-
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 use_gpu = torch.cuda.is_available()
 device = torch.device("cuda") if use_gpu else torch.device("cpu")
@@ -214,8 +190,10 @@ for i in range(len(docs_df)):
 
     prompt = (
         f"{system_instructions}\n"
+        f"JSON template:\n{json.dumps(json_template, ensure_ascii=False)}\n\n"
         f"Document ID: {doc_id}\n"
-        f"Text: {text}\n"
+        f"Text: {text}\n\n"
+        "Return JSON only."
     )
 
     # 1) Tokenize (explicit)
@@ -229,99 +207,57 @@ for i in range(len(docs_df)):
             input_ids=input_ids,
             attention_mask=attention_mask,
             max_new_tokens=256,
-            do_sample=False,
-            temperature=0.0,
-            pad_token_id=tokenizer.eos_token_id
+            do_sample=False
         )
 
     # 3) Decode (explicit)
     out_text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
-    # 4) Parse labeled key:value lines (best-effort)
+    # 4) Recover JSON substring (explicit)
+    match = re.search(r"\{.*\}", out_text, flags=re.DOTALL)
+    json_str = match.group(0) if match else out_text
+
+    # 5) Validate with Pydantic (explicit)
+    # Pydantic v2:
     parse_ok = True
     parse_error = ""
-    parse_flags: List[str] = []
-
-    allowed_keys = {
-        "event_type",
-        "event_date_iso",
-        "date_is_approximate",
-        "country",
-        "admin1_or_state",
-        "city_or_local",
-        "geo_precision",
-        "actors",
-        "outcome_summary"
-    }
-
-    lines = [ln.strip() for ln in out_text.splitlines() if ":" in ln]
-    kv = {}
-
-    for ln in lines:
-        k, v = ln.split(":", 1)
-        k_norm = k.strip().lower()
-        if k_norm in allowed_keys:
-            kv[k_norm] = v.strip()
-
-    if len(kv) == 0:
+    try:
+        extracted_obj = EventExtraction.model_validate_json(json_str)
+        extra_dict = extracted_obj.model_dump()
+    except Exception as e:
         parse_ok = False
-        parse_error = "no_key_value_lines_found"
-        parse_flags.append("parse_failed_local_model_output")
+        parse_error = str(e)
 
-    event_type = (kv.get("event_type", "other") or "other").strip().lower()
-    if event_type not in {"protest", "election", "policy_change", "violence", "disaster", "other"}:
-        parse_flags.append("invalid_event_type_from_model")
-        event_type = "other"
+        # Fallback record (keeps pipeline running)
+        extra_dict = {
+            "doc_id": doc_id,
+            "event_type": "other",
+            "event_date_iso": None,
+            "date_is_approximate": False,
+            "country": None,
+            "admin1_or_state": None,
+            "city_or_local": None,
+            "geo_precision": "unknown",
+            "actors": [],
+            "outcome_summary": None,
+            "extraction_confidence": 0.0,
+            "uncertainty_flags": ["parse_failed_local_model_output"],
+            "evidence": [
+                {"field": "event_type", "quote": ""},
+                {"field": "date", "quote": ""},
+                {"field": "location", "quote": ""},
+                {"field": "actors", "quote": ""},
+                {"field": "outcome", "quote": ""}
+            ]
+        }
 
-    event_date_iso = (kv.get("event_date_iso", "") or "").strip() or None
-
-    date_is_approx_raw = (kv.get("date_is_approximate", "") or "").strip().lower()
-    if date_is_approx_raw in {"true", "false"}:
-        date_is_approximate = (date_is_approx_raw == "true")
-    else:
-        parse_flags.append("date_is_approximate_missing_or_invalid")
-        date_is_approximate = True
-
-    country = (kv.get("country", "") or "").strip() or None
-    admin1_or_state = (kv.get("admin1_or_state", "") or "").strip() or None
-    city_or_local = (kv.get("city_or_local", "") or "").strip() or None
-
-    geo_precision = (kv.get("geo_precision", "unknown") or "unknown").strip().lower()
-    if geo_precision not in {"country_only", "admin1_or_state", "city_or_local", "unknown"}:
-        parse_flags.append("invalid_geo_precision_from_model")
-        geo_precision = "unknown"
-
-    actors_raw = (kv.get("actors", "") or "").strip()
-    actors = [a.strip() for a in actors_raw.split(",") if a.strip()] if actors_raw else []
-
-    outcome_summary = (kv.get("outcome_summary", "") or "").strip() or None
-
-    extracted_obj = EventExtraction(
-        doc_id=doc_id,
-        event_type=event_type,
-        event_date_iso=event_date_iso,
-        date_is_approximate=date_is_approximate,
-        country=country,
-        admin1_or_state=admin1_or_state,
-        city_or_local=city_or_local,
-        geo_precision=geo_precision,
-        actors=actors,
-        outcome_summary=outcome_summary,
-        extraction_confidence=0.35 if parse_ok else 0.2,
-        uncertainty_flags=parse_flags,
-        evidence=[]
-    )
-
-    extra_dict = extracted_obj.model_dump()
-
-
-    # 5) Attach trace fields (explicit)
+    # 6) Attach trace fields (explicit)
     extra_dict["raw_text"] = text
     extra_dict["local_model_raw_output"] = out_text
     extra_dict["parse_ok"] = parse_ok
     extra_dict["parse_error"] = parse_error
 
-    # 6) Flatten list fields for CSV (explicit)
+    # 7) Flatten list fields for CSV (explicit)
     extra_dict["evidence_json"] = json.dumps(extra_dict["evidence"], ensure_ascii=False)
     extra_dict["uncertainty_flags_json"] = json.dumps(extra_dict["uncertainty_flags"], ensure_ascii=False)
     extra_dict.pop("evidence")
@@ -329,7 +265,7 @@ for i in range(len(docs_df)):
 
     extractions.append(extra_dict)
 
-# 7) Build dataframe + save
+# 8) Build dataframe + save
 extractions_df = pd.DataFrame(extractions)
 
 print("\n------------------------------")

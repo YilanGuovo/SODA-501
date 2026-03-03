@@ -1,0 +1,12 @@
+Model used: google/flan-t5-small 
+Parse failures: 15 
+prompt: 
+Task: Extract ONE event record from the text.
+Output MUST be valid JSON only (no markdown, no extra text).
+Allowed event_type: protest, election, policy_change, violence, disaster, other.
+Allowed geo_precision: country_only, admin1_or_state, city_or_local, unknown.
+If unknown: use null for optional fields, add an uncertainty flag, and lower extraction_confidence.
+Evidence quotes must be short substrings copied from the text.
+
+failure_mode parse_failure 15 
+Name: count, dtype: int64

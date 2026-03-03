@@ -1,4 +1,4 @@
-# Big Data Experiments as Data Pipelines
+`git # Big Data Experiments as Data Pipelines
 # This script provides a complete framework for reproducible large-scale experimentation
 # Authors should modify and extend the code to meet their specific needs
 #
@@ -23,6 +23,7 @@ library(tidyverse)
 library(data.table)
 library(estimatr)
 library(broom)
+
 
 # Dependency tracking (renv)
 # Run ONE of the following depending on whether this is a new or existing project:
@@ -309,28 +310,37 @@ dt_day <- dt_logs[, .(
 ), by = .(date, day, treat)]
 
 dt_day_tbl <- as_tibble(dt_day)
-
+dt_day_tbl$lab_trt_cntr <- factor(
+  dt_day_tbl$treat, 
+  levels = c("0", "1"),
+  labels = c("Control", "Treatment")
+)
 # Figure 2: daily conversion rate by treatment arm
-p2 <- ggplot(dt_day_tbl, aes(x = date, y = conversion_rate, group = factor(treat))) +
-  geom_line() +
+p2 <- ggplot(dt_day_tbl, aes(x = date, y = conversion_rate, group = lab_trt_cntr, col = lab_trt_cntr, linetype = lab_trt_cntr)) +
+  geom_line(linewidth = 1) +
   theme_bw() +
   labs(title = "Daily Conversion Rate by Treatment Arm",
-       x = "Date", y = "Conversion rate")
+       x = "Date", y = "Conversion rate") + 
+  scale_colour_brewer(palette = "Dark2") + 
+  theme(legend.position = "bottom",
+        legend.title = element_blank())
 
 ggsave("outputs/figures/daily_conversion_rate.png", p2, width = 10, height = 4)
 
 # Figure 3: daily missingness by treatment arm (instrumentation check)
-p3 <- ggplot(dt_day_tbl, aes(x = date, y = missing_share, group = factor(treat))) +
-  geom_line() +
+p3 <- ggplot(dt_day_tbl, aes(x = date, y = missing_share, group = lab_trt_cntr,  col = lab_trt_cntr, linetype = lab_trt_cntr)) +
+  geom_line(linewidth = 1) +
   theme_bw() +
   labs(title = "Daily Missingness in Logged Purchases (Instrumentation Check)",
-       x = "Date", y = "Share missing")
+       x = "Date", y = "Share missing") + 
+  theme(legend.position = "bottom",
+        legend.title = element_blank())
 
 ggsave("outputs/figures/daily_missingness.png", p3, width = 10, height = 4)
 
 ###############################################
 # STEP 8: PLACEBO TESTS (A/A + PLACEBO OUTCOME)
-###############################################
+# ###############################################
 
 log_info("Running placebo tests (A/A and placebo outcome)")
 
@@ -339,25 +349,51 @@ placebo_pre <- lm_robust(pre_metric ~ treat + factor(block), data = dt_temp)
 write.csv(broom::tidy(placebo_pre), "outputs/tables/placebo_pre_metric.csv", row.names = FALSE)
 
 # A/A test: split CONTROL into two pseudo-arms many times and compute diff-in-means
+# This produces a distribution of "fake effects" under the null.
 set.seed(123)
-
-control_ids <- dt_temp %>% filter(treat == 0) %>% pull(user_id)
+control_ids <- dt_temp %>%
+  filter(treat == 0) %>% pull(user_id)
 
 aa_results <- tibble()
 
 for (b in 1:200) {
-  
-  # Random split of control into A and A'
+# Random split of control into A and A'
   a_group <- sample(control_ids, size = floor(length(control_ids) / 2), replace = FALSE)
-  
   dt_sub <- dt_temp %>%
     filter(treat == 0) %>%
-    mutate(aa = as.integer(user_id %in% a_group))
-  
+    mutate(aa = ifelse(user_id %in% a_group, 1, 0))
   aa_effect <- with(dt_sub, mean(converted[aa == 1]) - mean(converted[aa == 0]))
-  
-  aa_results <- aa_results %>%
-    bind_rows(tibble(iter = b, aa_effect = aa_effect))
+  aa_results <- aa_results %>% bind_rows(tibble(iter = b, aa_effect = aa_effect))
 }
 
-write.c
+write.csv(aa_results, "outputs/tables/aa_effects.csv", row.names = FALSE)
+
+p4 <- ggplot(aa_results, aes(x = aa_effect)) +
+  geom_histogram(bins = 40) +
+  theme_bw() +
+  labs(title = "A/A Placebo Distribution (Control Split Into Two Arms)",
+       x = "Difference in means (converted)", y = "Count")
+
+ggsave("outputs/figures/aa_placebo_hist.png", p4, width = 9, height = 4)
+
+###############################################
+# STEP 9: SAVE SESSION INFO
+# ###############################################
+log_info("Saving session information")
+
+writeLines(capture.output(sessionInfo()), "outputs/session_info.txt")
+log_info("Pipeline complete")
+
+###############################################
+# RETURN RESULTS (FOR INTERACTIVE USE)
+# ###############################################
+
+# return(
+#   list(
+#     ate_simple = ate_simple,
+#     balance_means = balance_table,
+#     smd_table = smd_table,
+#     regression_converted = tidy_conv,
+#     regression_purchases = tidy_pur
+#   )
+# )

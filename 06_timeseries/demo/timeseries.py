@@ -1,9 +1,14 @@
+
+# %%
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+os.chdir(r"D:\Yilan\1\Courses\SODA\501\soda_501\06_timeseries\demo")
+os.getcwd()
 
 # --- 0) Setup
 np.random.seed(123)
@@ -177,4 +182,6 @@ print("- In the DGP, we *know* the errors are AR(1), so observations are depende
 print("- ACF/PACF make that dependence visible.")
 print("- Removing trend helps isolate autocorrelation in the error process.")
 print("- Separately: random splits leak time and look too good; past->future splits are the honest default.")
-``
+
+
+# %%

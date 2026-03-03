@@ -24,6 +24,7 @@
 # If you do not have these installed, run (in Terminal / Anaconda Prompt):
 #   pip install pandas numpy matplotlib statsmodels fredapi pyreadr plotly lxml requests
 
+# %%
 import re
 import numpy as np
 import pandas as pd
@@ -80,7 +81,11 @@ election_years = np.sort(vote_data["year"].unique())
 # Part 2: Pulling economic indicators from FRED (Q1/Q2 of election years)
 # -----------------------------------------------------------------------------
 # NOTE: Replace with your own key (students should get one from FRED).
-fred_api_key = "YOUR_FRED_API_KEY_HERE"
+fred_api_key = os.environ.get("FRED_API_KEY")
+
+if not fred_api_key:
+    raise ValueError("Missing FRED_API_KEY environment variable.")
+
 fred = Fred(api_key=fred_api_key)
 
 # Define observation window based on the election years in the vote data
@@ -277,3 +282,6 @@ fig = px.choropleth(
     title="2020 Vote Share Difference (Biden − Trump)"
 )
 fig.show()
+
+print("UNRATE sample:", unrate.head())
+# %%
