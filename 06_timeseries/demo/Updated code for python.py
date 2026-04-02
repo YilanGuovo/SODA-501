@@ -4,7 +4,10 @@
 # Pipeline dirs: data/raw, data/processed, outputs/figures, outputs/tables
 ###############################################
 ####required packages
+<<<<<<< HEAD
 # %%
+=======
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352
 import os
 import numpy as np
 import pandas as pd
@@ -13,9 +16,12 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
+<<<<<<< HEAD
 os.chdir(r"D:\Yilan\1\Courses\SODA\501\soda_501\06_timeseries\demo")
 os.getcwd()
 
+=======
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352
 # ============================================
 # 0) PROJECT DIRECTORY SETUP (pipeline style) same as last week
 # ============================================
@@ -230,5 +236,8 @@ print("- data/raw/dgp_series.csv")
 print("- data/processed/detrended_residuals.csv")
 print("- outputs/figures/01...08_*.png")
 print(f"- {summary_path}")
+<<<<<<< HEAD
 
 # %%
+=======
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

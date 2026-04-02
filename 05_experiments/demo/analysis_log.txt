@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2026-02-23 10:59:02,611 | INFO | Starting big data experiment pipeline
 2026-02-23 10:59:02,611 | INFO | n_users = 100000 | n_days = 14
 2026-02-23 10:59:02,612 | INFO | Generating synthetic user table
@@ -19,3 +20,26 @@
 2026-02-23 10:59:29,186 | INFO | Running placebo tests (A/A and placebo outcome)
 2026-02-23 10:59:31,020 | INFO | Saving environment information
 2026-02-23 10:59:31,023 | INFO | Pipeline complete
+=======
+2026-02-23 10:59:02,611 | INFO | Starting big data experiment pipeline
+2026-02-23 10:59:02,611 | INFO | n_users = 100000 | n_days = 14
+2026-02-23 10:59:02,612 | INFO | Generating synthetic user table
+2026-02-23 10:59:02,834 | INFO | Saved: data/raw/users.csv
+2026-02-23 10:59:02,835 | INFO | Creating blocked assignment table (and saving it)
+2026-02-23 10:59:02,852 | INFO | Noncompliance p_receive = 0.8
+2026-02-23 10:59:03,109 | INFO | Saved: data/raw/assignment_table.csv
+2026-02-23 10:59:03,109 | INFO | Generating synthetic event logs (user-day table)
+2026-02-23 10:59:11,563 | INFO | Saved: data/raw/event_logs.csv
+2026-02-23 10:59:11,564 | INFO | Building analysis-ready dataset (user-level aggregation)
+2026-02-23 10:59:19,817 | INFO | Saved: data/processed/analysis_dataset.csv
+2026-02-23 10:59:19,818 | INFO | Running randomization checks / balance checks
+2026-02-23 10:59:19,833 | INFO | Estimating treatment effects (ATE)
+2026-02-23 10:59:20,231 | INFO | Adding retention-style outcomes and estimating ATE
+2026-02-23 10:59:27,662 | INFO | Saved: outputs/tables/ate_retention.csv
+2026-02-23 10:59:27,663 | INFO | Estimating ITT vs TOT (IV) under noncompliance
+2026-02-23 10:59:28,370 | INFO | Saved: outputs/tables/itt_vs_tot.csv
+2026-02-23 10:59:28,371 | INFO | Creating figures
+2026-02-23 10:59:29,186 | INFO | Running placebo tests (A/A and placebo outcome)
+2026-02-23 10:59:31,020 | INFO | Saving environment information
+2026-02-23 10:59:31,023 | INFO | Pipeline complete
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

@@ -183,5 +183,8 @@ print("- ACF/PACF make that dependence visible.")
 print("- Removing trend helps isolate autocorrelation in the error process.")
 print("- Separately: random splits leak time and look too good; past->future splits are the honest default.")
 
+<<<<<<< HEAD
 
 # %%
+=======
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

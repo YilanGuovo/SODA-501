@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 Python: 3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]
 Executable: c:\Users\Yilan\AppData\Local\Python\pythoncore-3.14-64\python.exe
 Platform: Windows-11-10.0.26200-SP0
+=======
+Python: 3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]
+Executable: c:\Users\Yilan\AppData\Local\Python\pythoncore-3.14-64\python.exe
+Platform: Windows-11-10.0.26200-SP0
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

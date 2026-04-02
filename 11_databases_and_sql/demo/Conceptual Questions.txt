@@ -1,0 +1,14 @@
+Question 1:
+Relational schema is a structure of a database. It defines what kinds of data are stored and how different pieces of data are connected. In the real-world context, a lot of data are interconnected. And from a researcher perspective, we often need to associate several separate dataset together.
+
+
+A primary key is a column that uniquely identifies each row in a table. 
+	e.g: "id" in the candidates and contributors tables 
+
+
+A foreign key is a column in the table that refers to the primary key in another table. 
+	e.g.: "candidate_id" and "contributor_id" in the contributions table.
+
+These keys can help data in different tables match each other. Therefore, we do not need to duplicate some basic information, for example, the name, party, etc. of candidates, in every table.
+
+Joins combine data across tables so that it is possible to analyze the data in one table based on the other table's data. For example, by joining contributions with candidates on candidate_id, we can analyze total donations by party.

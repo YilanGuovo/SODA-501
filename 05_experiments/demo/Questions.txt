@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 ITT (intention to treat) compares participants based on their original assignment, not on whether they actually received or taken the treatment. ITT is the default for decision-making because it reflects the realistic loss that some people may not engage in the treatment for all kinds of reasons.
 
+=======
+ITT (intention to treat) compares participants based on their original assignment, not on whether they actually received or taken the treatment. ITT is the default for decision-making because it reflects the realistic loss that some people may not engage in the treatment for all kinds of reasons.
+
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352
 However, researchers may sometimes want the effect on people who actually used the treatment (TOT). Under those conditions, we assume that random assignment only affects outcomes through treatment use and there are no hidden differences between people who engage in the treatment and people who are assigned but not engage for some reason. For example, researchers may use TOT to estimate the effect of the exercise program only for the patients who actually do the excersice but assume that like willingness to exercise, motivation, or personal discipline do not directly affect the outcome.

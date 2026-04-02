@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 variable,smd
 baseline_activity,-0.003215685916399116
 pre_metric,-0.0025599816054992885
+=======
+variable,smd
+baseline_activity,-0.003215685916399116
+pre_metric,-0.0025599816054992885
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

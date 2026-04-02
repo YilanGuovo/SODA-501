@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Time leakage demo (ARIMA(1,0,0))
 ================================
 WRONG (random split) RMSE: 3.887805
@@ -7,3 +8,14 @@ DGP AR(1) recovery on detrended residuals
 ========================================
 DGP truth phi2: 0.75
 Estimated phi:  0.759691
+=======
+Time leakage demo (ARIMA(1,0,0))
+================================
+WRONG (random split) RMSE: 3.887805
+RIGHT (time split)  RMSE: 6.586518
+
+DGP AR(1) recovery on detrended residuals
+========================================
+DGP truth phi2: 0.75
+Estimated phi:  0.759691
+>>>>>>> d9681faaefa0c817f85f304ca745e7ad9ee5a352

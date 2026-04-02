@@ -1,6 +1,5 @@
 ###############################################################################
 # SQL Tutorial in Python: SQLite + Campaign Finance (Simulated Data)
-# Author: Jared Edgerton
 # Date: date.today()
 #
 # This script demonstrates:
@@ -8,23 +7,10 @@
 #   2) Inserting simulated campaign finance data
 #   3) Writing and running SQL queries from Python
 #   4) Visualizing query outputs with matplotlib
-#
-# Teaching note (important):
-# - This file is intentionally written as a "hard-coded" sequential workflow.
-# - No user-defined functions.
-# - No conditional statements (no if/else).
-# - Steps are repeated explicitly so students can follow and modify each piece.
 ###############################################################################
 
-# -----------------------------------------------------------------------------
-# Setup
-# -----------------------------------------------------------------------------
-# If you do not have these installed, run (in Terminal / Anaconda Prompt):
-#   pip install pandas numpy matplotlib
-#
-# NOTE:
-# - sqlite3 is part of Python's standard library (no install needed).
-
+# %%
+import os
 import sqlite3
 import numpy as np
 import pandas as pd
@@ -32,51 +18,35 @@ import matplotlib.pyplot as plt
 
 from datetime import date, timedelta
 
+os.chdir(r"D:\Yilan\1\Courses\SODA\501\soda_501\11_databases_and_sql\demo")
+print(os.getcwd())
+
+os.makedirs("database", exist_ok=True)
+os.makedirs("figures", exist_ok=True)
+
+
 # -----------------------------------------------------------------------------
 # Part 1: Create and Populate a Local SQLite Database
 # -----------------------------------------------------------------------------
-# SQLite is a lightweight database that lives in a single file (e.g., .db).
-# We will:
-#   1) Connect to a SQLite file
-#   2) Drop existing tables
-#   3) Create tables
-#   4) Insert simulated data
-#   5) Add indexes to speed up common queries
 
-# -----------------------------------------------------------------------------
 # Step 1: Connect to a database file
-# -----------------------------------------------------------------------------
-# If the file does not exist, SQLite creates it automatically.
-con = sqlite3.connect("campaign_finance.db")
+con = sqlite3.connect("database\campaign_finance.db")
 cur = con.cursor()
 
-# -----------------------------------------------------------------------------
 # Step 2: Drop tables (so the script can be rerun from scratch)
-# -----------------------------------------------------------------------------
-# SQL keyword notes:
-# - DROP TABLE removes a table
-# - IF EXISTS prevents errors if the table does not exist
-
 cur.execute("DROP TABLE IF EXISTS contributions;")
 cur.execute("DROP TABLE IF EXISTS contributors;")
 cur.execute("DROP TABLE IF EXISTS candidates;")
 con.commit()
 
-# -----------------------------------------------------------------------------
 # Step 3: Create tables
-# -----------------------------------------------------------------------------
-# SQL keyword notes:
-# - CREATE TABLE creates a new table
-# - PRIMARY KEY uniquely identifies each row
-# - FOREIGN KEY enforces relationships between tables (relational structure)
-
 cur.execute("""
   CREATE TABLE candidates (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     party TEXT,
     office TEXT,
-    winner INTEGER  -- 1 = winner, 0 = not winner (SQLite stores booleans as integers)
+    winner INTEGER
   );
 """)
 
@@ -106,10 +76,6 @@ con.commit()
 # -----------------------------------------------------------------------------
 # Step 4: Generate simulated data
 # -----------------------------------------------------------------------------
-# Teaching idea:
-# - We are building a "toy" campaign finance database that is large enough
-#   to make SQL meaningful, but still simple enough to understand.
-
 np.random.seed(123)
 
 # ---- Candidates table (100 candidates) ----
@@ -156,7 +122,9 @@ contributor_occupations = np.random.choice(
     replace=True
 )
 
-contributor_employers = np.array([f"Company {i}" for i in np.random.randint(1, 5001, size=100000)])
+contributor_employers = np.array(
+    [f"Company {i}" for i in np.random.randint(1, 5001, size=100000)]
+)
 
 state_abb = [
     "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
@@ -177,8 +145,6 @@ contributors = pd.DataFrame({
 })
 
 # ---- Contributions table (1,000,000 contributions) ----
-# - amount is log-normal to mimic a skewed donation distribution
-# - date is sampled uniformly across 2024
 contribution_ids = np.arange(1, 1000001)
 
 contribution_contributor_ids = np.random.randint(1, 100001, size=1000000)
@@ -194,7 +160,10 @@ end_date = date(2024, 12, 31)
 n_days = (end_date - start_date).days + 1
 
 random_day_offsets = np.random.randint(0, n_days, size=1000000)
-contribution_dates = np.array([(start_date + timedelta(days=int(d))).isoformat() for d in random_day_offsets])
+contribution_dates = np.array([
+    (start_date + timedelta(days=int(d))).isoformat()
+    for d in random_day_offsets
+])
 
 contributions = pd.DataFrame({
     "id": contribution_ids,
@@ -207,22 +176,14 @@ contributions = pd.DataFrame({
 # -----------------------------------------------------------------------------
 # Step 5: Insert data into the database
 # -----------------------------------------------------------------------------
-# pandas.DataFrame.to_sql() writes a DataFrame into a database table.
-# chunksize helps avoid huge single inserts.
-
 candidates.to_sql("candidates", con, if_exists="append", index=False, chunksize=5000)
 contributors.to_sql("contributors", con, if_exists="append", index=False, chunksize=5000)
 contributions.to_sql("contributions", con, if_exists="append", index=False, chunksize=5000)
 con.commit()
 
 # -----------------------------------------------------------------------------
-# Step 6: Create indexes (performance optimization)
+# Step 6: Create indexes
 # -----------------------------------------------------------------------------
-# Indexes speed up queries that filter/join on these columns.
-# SQL keyword notes:
-# - CREATE INDEX builds an index structure for faster lookups
-# - IF NOT EXISTS prevents errors if an index already exists
-
 cur.execute("CREATE INDEX IF NOT EXISTS idx_contrib_contributor_id ON contributions (contributor_id);")
 cur.execute("CREATE INDEX IF NOT EXISTS idx_contrib_candidate_id   ON contributions (candidate_id);")
 cur.execute("CREATE INDEX IF NOT EXISTS idx_contrib_amount         ON contributions (amount);")
@@ -230,22 +191,156 @@ cur.execute("CREATE INDEX IF NOT EXISTS idx_contrib_date           ON contributi
 con.commit()
 
 # -----------------------------------------------------------------------------
-# Step 7: Quick sanity checks (counts + small samples)
+# Part 3: Required outputs for Question 3
+# -----------------------------------------------------------------------------
+print("\n==============================")
+print("QUESTION 3: DATABASE + SCHEMA")
+print("==============================")
+
+# Row counts using SELECT COUNT(*)
+count_candidates = pd.read_sql_query(
+    "SELECT COUNT(*) AS n_rows FROM candidates;", con
+)
+count_contributors = pd.read_sql_query(
+    "SELECT COUNT(*) AS n_rows FROM contributors;", con
+)
+count_contributions = pd.read_sql_query(
+    "SELECT COUNT(*) AS n_rows FROM contributions;", con
+)
+
+print("\nRow count: candidates")
+print(count_candidates)
+
+print("\nRow count: contributors")
+print(count_contributors)
+
+print("\nRow count: contributions")
+print(count_contributions)
+
+# Show schema for each table
+schema_candidates = pd.read_sql_query("PRAGMA table_info(candidates);", con)
+schema_contributors = pd.read_sql_query("PRAGMA table_info(contributors);", con)
+schema_contributions = pd.read_sql_query("PRAGMA table_info(contributions);", con)
+
+print("\nSchema: candidates")
+print(schema_candidates)
+
+print("\nSchema: contributors")
+print(schema_contributors)
+
+print("\nSchema: contributions")
+print(schema_contributions)
+
+# Brief explanation of keys connecting the tables
+print("\nHow the keys connect the tables:")
+print(
+    "The contributions table is the linking table between contributors and candidates. "
+    "Its contributor_id matches contributors.id, so each contribution can be tied to the "
+    "person who donated. Its candidate_id matches candidates.id, so each contribution can "
+    "also be tied to the candidate who received the money. Together, these two foreign keys "
+    "let us join donation records to both donor information and candidate information."
+)
+
+# -----------------------------------------------------------------------------
+# Part 4: Required join + aggregation for Question 4
+# -----------------------------------------------------------------------------
+print("\n======================================")
+print("QUESTION 4: JOIN + AGGREGATION + PLOT")
+print("======================================")
+
+# Required query:
+# - join contributions to candidates
+# - restrict to amount > 1000
+# - output party, total_amount, num_contributions
+query_q4 = """
+  SELECT
+    ca.party AS party,
+    SUM(co.amount) AS total_amount,
+    COUNT(*) AS num_contributions
+  FROM contributions co
+  JOIN candidates ca
+    ON co.candidate_id = ca.id
+  WHERE co.amount > 1000
+  GROUP BY ca.party
+  ORDER BY total_amount DESC;
+"""
+
+party_summary = pd.read_sql_query(query_q4, con)
+
+print("\nSQL for Question 4:")
+print(query_q4)
+
+print("Output table:")
+print(party_summary)
+
+# Visualization: bar plot of total amount by party
+plt.figure()
+plt.bar(party_summary["party"], party_summary["total_amount"])
+plt.title("Total Contributions by Party (Amount > 1000)")
+plt.xlabel("Party")
+plt.ylabel("Total Amount")
+plt.tight_layout()
+plt.savefig("figures\contributions_by_party.png", dpi=150)
+plt.show()
+
+print("\nSaved plot: contributions_by_party.png")
+
+# -----------------------------------------------------------------------------
+# Part 5: Indexes + query plan for Question 5
+# -----------------------------------------------------------------------------
+print("\n===================================")
+print("QUESTION 5: INDEXES + QUERY PLAN")
+print("===================================")
+
+# Verify which indexes exist on contributions
+indexes_contributions = pd.read_sql_query("""
+  SELECT
+    name,
+    sql
+  FROM sqlite_master
+  WHERE type = 'index'
+    AND tbl_name = 'contributions';
+""", con)
+
+print("\nIndexes on contributions:")
+print(indexes_contributions)
+
+# Choose one query that filters by candidate_id
+filter_query = """
+  SELECT *
+  FROM contributions
+  WHERE candidate_id = 10;
+"""
+
+query_plan = pd.read_sql_query(
+    "EXPLAIN QUERY PLAN " + filter_query,
+    con
+)
+
+print("\nFiltered query:")
+print(filter_query)
+
+print("EXPLAIN QUERY PLAN output:")
+print(query_plan)
+
+print("\nInterpretation of the query plan:")
+print(
+    "This query filters the contributions table on candidate_id, which is one of the columns "
+    "we indexed. If SQLite reports SEARCH contributions USING INDEX idx_contrib_candidate_id, "
+    "that means it is using the candidate_id index rather than scanning the full table. "
+    "Using an index is helpful here because the contributions table is very large, so indexed "
+    "lookup should reduce the amount of data SQLite must examine. If the plan instead showed "
+    "a full table scan, then an index on candidate_id would be especially useful for speeding "
+    "up repeated filters and joins on that column. In general, indexes help most when queries "
+    "frequently restrict rows on the indexed field."
+)
+
+# -----------------------------------------------------------------------------
+# Optional: keep a couple of your original examples if you want
 # -----------------------------------------------------------------------------
 print("\n------------------------------")
-print("Sanity checks: table sizes")
+print("Sample joined rows")
 print("------------------------------")
-
-print(pd.read_sql_query("SELECT COUNT(*) AS n_candidates FROM candidates;", con))
-print(pd.read_sql_query("SELECT COUNT(*) AS n_contributors FROM contributors;", con))
-print(pd.read_sql_query("SELECT COUNT(*) AS n_contributions FROM contributions;", con))
-
-print("\n------------------------------")
-print("Sanity checks: sample rows")
-print("------------------------------")
-
-print(pd.read_sql_query("SELECT * FROM candidates LIMIT 5;", con))
-
 print(pd.read_sql_query("""
   SELECT
     co.id,
@@ -260,241 +355,7 @@ print(pd.read_sql_query("""
 """, con))
 
 # -----------------------------------------------------------------------------
-# Part 2: SQL Queries for Analysis
-# -----------------------------------------------------------------------------
-# In each example below, we:
-#   (1) Write a SQL query as a string
-#   (2) Run it with pandas.read_sql_query(query, con)
-#   (3) Print or plot the result
-#
-# SQL syntax checklist you’ll see repeatedly:
-# - SELECT: which columns to return
-# - FROM: which table to start from
-# - JOIN ... ON: how to combine tables
-# - WHERE: filter rows
-# - GROUP BY: aggregate by groups
-# - ORDER BY: sort results
-# - LIMIT: keep only the top rows
-
-# -----------------------------------------------------------------------------
-# Query 1: Top 10 occupations by total contribution amount
-# -----------------------------------------------------------------------------
-# Concepts:
-# - SUM() aggregates amounts by occupation
-# - COUNT(*) counts rows per group
-# - GROUP BY creates groups
-# - ORDER BY sorts totals descending
-
-query_1 = """
-  SELECT
-    c.occupation,
-    SUM(co.amount) AS total_amount,
-    COUNT(*) AS num_contributions
-  FROM contributors c
-  JOIN contributions co
-    ON c.id = co.contributor_id
-  GROUP BY c.occupation
-  ORDER BY total_amount DESC
-  LIMIT 10;
-"""
-top_occupations = pd.read_sql_query(query_1, con)
-
-print("\n------------------------------")
-print("Top 10 occupations by total contribution amount")
-print("------------------------------")
-print(top_occupations)
-
-# -----------------------------------------------------------------------------
-# Query 2: Percentage of contributions by party for donations > $1000
-# -----------------------------------------------------------------------------
-# Concepts:
-# - WHERE filters to only contributions > 1000
-# - subquery (SELECT SUM(...)) computes the total for the denominator
-# - grouping by party creates one row per party
-
-query_2 = """
-  SELECT
-    ca.party,
-    SUM(co.amount) AS total_amount,
-    SUM(co.amount) * 100.0 / (
-      SELECT SUM(amount)
-      FROM contributions
-      WHERE amount > 1000
-    ) AS percentage
-  FROM contributions co
-  JOIN candidates ca
-    ON co.candidate_id = ca.id
-  WHERE co.amount > 1000
-  GROUP BY ca.party;
-"""
-party_pct = pd.read_sql_query(query_2, con)
-
-print("\n------------------------------")
-print("Percent of total contributions by party (amount > $1000)")
-print("------------------------------")
-print(party_pct)
-
-# -----------------------------------------------------------------------------
-# Query 3: Candidates receiving contributions from the most distinct states
-# -----------------------------------------------------------------------------
-# Concepts:
-# - COUNT(DISTINCT state) counts unique states
-# - join chain: candidates -> contributions -> contributors
-# - ORDER BY sorts by (num_states, then contribution_count)
-
-query_3 = """
-  SELECT
-    ca.id AS candidate_id,
-    ca.name,
-    ca.party,
-    COUNT(DISTINCT c.state) AS num_states,
-    COUNT(co.id) AS contribution_count
-  FROM candidates ca
-  JOIN contributions co
-    ON ca.id = co.candidate_id
-  JOIN contributors c
-    ON co.contributor_id = c.id
-  GROUP BY ca.id, ca.name, ca.party
-  ORDER BY num_states DESC, contribution_count DESC
-  LIMIT 5;
-"""
-candidates_most_states = pd.read_sql_query(query_3, con)
-
-print("\n------------------------------")
-print("Candidates with contributions from the most distinct states")
-print("------------------------------")
-print(candidates_most_states)
-
-# -----------------------------------------------------------------------------
-# Query 4: Contributors donating to multiple parties (cross-party donors)
-# -----------------------------------------------------------------------------
-# Concepts:
-# - HAVING filters groups after aggregation
-# - GROUP_CONCAT summarizes unique parties into one string (SQLite feature)
-# - CASE WHEN creates party-specific sums
-
-query_4 = """
-  SELECT
-    c.name,
-    GROUP_CONCAT(DISTINCT ca.party) AS parties,
-    SUM(CASE WHEN ca.party = 'Democrat' THEN co.amount ELSE 0 END) AS dem_amount,
-    SUM(CASE WHEN ca.party = 'Republican' THEN co.amount ELSE 0 END) AS rep_amount
-  FROM contributors c
-  JOIN contributions co
-    ON c.id = co.contributor_id
-  JOIN candidates ca
-    ON co.candidate_id = ca.id
-  GROUP BY c.id
-  HAVING COUNT(DISTINCT ca.party) > 1
-  LIMIT 20;
-"""
-cross_party = pd.read_sql_query(query_4, con)
-
-print("\n------------------------------")
-print("Cross-party contributors (sample)")
-print("------------------------------")
-print(cross_party)
-
-# -----------------------------------------------------------------------------
-# Query 5: Moving average of contribution amounts for top 3 candidates
-# -----------------------------------------------------------------------------
-# Concepts:
-# - WITH ... AS creates CTEs (Common Table Expressions)
-# - window functions use OVER (PARTITION BY ... ORDER BY ...)
-# - ROWS BETWEEN 29 PRECEDING AND CURRENT ROW defines a rolling window
-# - This query:
-#   (1) builds cumulative totals per candidate
-#   (2) computes 30-day moving average of contribution amounts by candidate
-#   (3) keeps only the top 3 candidates by cumulative amount
-
-query_5 = """
-  WITH ranked_contributions AS (
-    SELECT
-      ca.id,
-      ca.name,
-      co.date,
-      co.amount,
-      SUM(co.amount) OVER (
-        PARTITION BY ca.id
-        ORDER BY co.date
-      ) AS cumulative_amount
-    FROM candidates ca
-    JOIN contributions co
-      ON ca.id = co.candidate_id
-  ),
-  windowed_avg AS (
-    SELECT
-      id,
-      name,
-      date,
-      amount,
-      AVG(amount) OVER (
-        PARTITION BY id
-        ORDER BY date
-        ROWS BETWEEN 29 PRECEDING AND CURRENT ROW
-      ) AS moving_avg
-    FROM ranked_contributions
-  )
-  SELECT
-    id,
-    name,
-    date,
-    amount,
-    moving_avg
-  FROM windowed_avg
-  WHERE id IN (
-    SELECT id
-    FROM ranked_contributions
-    GROUP BY id
-    ORDER BY MAX(cumulative_amount) DESC
-    LIMIT 3
-  )
-  ORDER BY id, date
-  LIMIT 100;
-"""
-moving_avg = pd.read_sql_query(query_5, con)
-
-print("\n------------------------------")
-print("Moving average contributions (top 3 candidates, sample rows)")
-print("------------------------------")
-print(moving_avg)
-
-# -----------------------------------------------------------------------------
-# Query 6: Visualize total contributions by party
-# -----------------------------------------------------------------------------
-# Concepts:
-# - This query aggregates contribution totals by party (SUM + GROUP BY)
-# - Then we plot with matplotlib
-
-query_6 = """
-  SELECT
-    ca.party,
-    SUM(co.amount) AS total_amount
-  FROM contributions co
-  JOIN candidates ca
-    ON co.candidate_id = ca.id
-  GROUP BY ca.party;
-"""
-party_totals = pd.read_sql_query(query_6, con)
-
-print("\n------------------------------")
-print("Total contributions by party")
-print("------------------------------")
-print(party_totals)
-
-# Plot: total amount by party
-plt.figure()
-plt.bar(party_totals["party"], party_totals["total_amount"])
-plt.title("Total Contributions by Party")
-plt.xlabel("Party")
-plt.ylabel("Total Amount ($)")
-plt.tight_layout()
-plt.savefig("contributions_by_party.png", dpi=150)
-plt.show()
-
-print("\nSaved plot: contributions_by_party.png")
-
-# -----------------------------------------------------------------------------
 # Close the database connection
 # -----------------------------------------------------------------------------
 con.close()
+# %%
