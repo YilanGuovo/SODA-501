@@ -1,0 +1,3 @@
+Question 4
+
+Notes with a high degree centrality are important because they are the ones that connect most to other nodes. Notes with a higher betweenness centrality are important because they own a lot of shortest paths between nodes that pass through. Notes with high eigenvector centrality are nodes that connect to other important nodes. There are some notes, such as 352, 129, 390, 394, appear consistently across three centrality measures, suggesting they are generally important in multiple senses. So I think the rankings well agree with each other relatively. 

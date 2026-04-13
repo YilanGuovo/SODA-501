@@ -58,6 +58,7 @@
 #     git add .
 #     git commit -m "PS: reproducible workflow + regressions + plots"
 #     git push -u origin main
+#     git push -u origin main --force #a force push
 #
 # Notes:
 # - If your branch is called "master" instead of "main", use:
