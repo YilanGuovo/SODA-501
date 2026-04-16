@@ -22,8 +22,7 @@
 # -----------------------------------------------------------------------------
 # Install (if needed) and load the necessary libraries.
 # NOTE: For teaching, we keep installation lines commented out.
-#
-# install.packages(c("fastLink", "dplyr", "ggplot2", "stringdist"))
+#install.packages(c("fastLink", "stringdist"))
 library(fastLink)
 library(dplyr)
 library(ggplot2)
@@ -250,36 +249,41 @@ matches_low <- getMatches(
 comp_data_by_match <- data.frame()
 
 for (i in seq(0.1, 1, 0.1)) {
-
-  try({temp_data <- matches_low %>%
-    filter(
-      posterior > i - 0.1,
-      posterior <= i
+  
+  try({
+    temp_data <- matches_low %>%
+      filter(
+        posterior > i - 0.1,
+        posterior <= i
+      )
+    
+    df_a_temp <- df_a %>% filter(id %in% temp_data$id)
+    df_b_temp <- df_b %>% filter(id %in% temp_data$id)
+    
+    compare_data <- df_a_temp %>%
+      inner_join(df_b_temp, by = "id", suffix = c(".a", ".b"))
+    
+    # Skip empty bins to avoid data.frame length mismatch errors
+    if (nrow(compare_data) == 0) next
+    
+    # Levenshtein distance (lv) measures how many edits it takes to transform one string into another
+    string_dist_fname <- stringdist(compare_data$firstname.a, compare_data$firstname.b, method = "lv")
+    string_dist_lname <- stringdist(compare_data$lastname.a, compare_data$lastname.b, method = "lv")
+    
+    # Birthyear distance: absolute difference
+    byear_dist <- abs(compare_data$birthyear.a - compare_data$birthyear.b)
+    
+    comp_data_by_match <- bind_rows(
+      comp_data_by_match,
+      data.frame(
+        first_name_distance = string_dist_fname,
+        last_name_distance = string_dist_lname,
+        birth_year_distance = byear_dist,
+        threshold_bin = paste0(i - 0.1, "-", i),
+        count_in_bin = nrow(compare_data)
+      )
     )
-
-  df_a_temp <- df_a %>% filter(id %in% temp_data$id)
-  df_b_temp <- df_b %>% filter(id %in% temp_data$id)
-
-  compare_data <- df_a_temp %>%
-    inner_join(df_b_temp, by = "id", suffix = c(".a", ".b"))
-
-  # Levenshtein distance (lv) measures how many edits it takes to transform one string into another
-  string_dist_fname <- stringdist(compare_data$firstname.a, compare_data$firstname.b, method = "lv")
-  string_dist_lname <- stringdist(compare_data$lastname.a, compare_data$lastname.b, method = "lv")
-
-  # Birthyear distance: absolute difference
-  byear_dist <- abs(compare_data$birthyear.a - compare_data$birthyear.b)
-
-  comp_data_by_match <- bind_rows(
-    comp_data_by_match,
-    data.frame(
-      first_name_distance = string_dist_fname,
-      last_name_distance = string_dist_lname,
-      birth_year_distance = byear_dist,
-      threshold_bin = paste0(i - 0.1, "-", i),
-      count_in_bin = nrow(compare_data)
-    )
-  )})
+  })
 }
 
 # Optional visualization: average distance by posterior bin
@@ -295,32 +299,32 @@ avg_dist_by_bin <- comp_data_by_match %>%
 
 print(avg_dist_by_bin)
 
-# ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_first, group = 1)) +
-#   geom_line() +
-#   geom_point() +
-#   labs(
-#     x = "Posterior probability bin",
-#     y = "Mean Levenshtein distance (first name)",
-#     title = "Match quality vs posterior probability (first name distance)"
-#   ) +
-#   theme_bw()
-# 
-# ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_last, group = 1)) +
-#   geom_line() +
-#   geom_point() +
-#   labs(
-#     x = "Posterior probability bin",
-#     y = "Mean Levenshtein distance (last name)",
-#     title = "Match quality vs posterior probability (last name distance)"
-#   ) +
-#   theme_bw()
-# 
-# ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_birth, group = 1)) +
-#   geom_line() +
-#   geom_point() +
-#   labs(
-#     x = "Posterior probability bin",
-#     y = "Mean absolute difference (birth year)",
-#     title = "Match quality vs posterior probability (birth year difference)"
-#   ) +
-#   theme_bw()
+ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_first, group = 1)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Posterior probability bin",
+    y = "Mean Levenshtein distance (first name)",
+    title = "Match quality vs posterior probability (first name distance)"
+  ) +
+  theme_bw()
+
+ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_last, group = 1)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Posterior probability bin",
+    y = "Mean Levenshtein distance (last name)",
+    title = "Match quality vs posterior probability (last name distance)"
+  ) +
+  theme_bw()
+ 
+ggplot(avg_dist_by_bin, aes(x = threshold_bin, y = mean_birth, group = 1)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Posterior probability bin",
+    y = "Mean absolute difference (birth year)",
+    title = "Match quality vs posterior probability (birth year difference)"
+  ) +
+  theme_bw()

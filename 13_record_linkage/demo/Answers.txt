@@ -1,0 +1,14 @@
+Question 2
+Deterministic matching can fail because the same entities across different datasets may have different identifiers. This will lead to many missed matches. For example, data may contain typos (e.g., "Yilan Guo" vs. "Yilen Guo"). Becuase deterministic matching relies on exact matches, it cannot recognize that these variations actually refer to the same individual.
+In contrast, probabilistic matching is based on the similarity between records and the posterior probability that two records belong to the same entity. Matches are determined based on a threshold applied to this probability. Although this approach may introduce some false matches, the threshold can be adjusted to balance false positives and false negatives.
+
+Question 4
+We have 4524 match counts which is less than 50% of our total data. It is pretty reasonable because we introduce 25% of noises for three variables in dataset B and deterministic matching will treat these noises as non-matches.
+
+Question 5
+As the threshold increases, the number of matches decreases, because a higher threshold requires a higher posterior probability for two records to be considered a match. As a result, some true matches may be missed when the differences between records are relatively large (e.g., "Yilan Guo" vs. "Yaaan Gaa").
+
+Question 6
+Generally, as threshold increases, we will have better match quality but less match counts. According to the output, 0.9 might be a reasonable threshold based on the match quality. It yields around 6,000 matches, which is higher than the 4,559 matches obtained from deterministic matching.
+Deterministic matching tends to have higher accuracy but results in more data loss, whereas probabilistic matching may introduce false positives while retaining more matches. 
+Posterior probability should be positively correlated with string similarity (or negatively correlated with string distance).

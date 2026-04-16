@@ -33,8 +33,6 @@ from rapidfuzz.distance import Levenshtein
 
 from datetime import date
 
-os.makedirs("data", exist_ok=True)
-
 
 # -----------------------------------------------------------------------------
 # Part 0: Instructor Prep (Generate Two Datasets)
@@ -117,8 +115,8 @@ df_b.loc[idx_birthyear, "birthyear"] = df_b.loc[idx_birthyear, "birthyear"].to_n
 # -----------------------------------------------------------------------------
 # Step 3: Save datasets to CSV (so students can load them like "real" files)
 # -----------------------------------------------------------------------------
-df_a.to_csv("data/dataset_a.csv", index=False)
-df_b.to_csv("data/dataset_b.csv", index=False)
+df_a.to_csv("dataset_a.csv", index=False)
+df_b.to_csv("dataset_b.csv", index=False)
 
 
 # -----------------------------------------------------------------------------
@@ -130,8 +128,8 @@ df_b.to_csv("data/dataset_b.csv", index=False)
 # -----------------------------------------------------------------------------
 # Step 1: Load the datasets
 # -----------------------------------------------------------------------------
-df_a = pd.read_csv("data/dataset_a.csv")
-df_b = pd.read_csv("data/dataset_b.csv")
+df_a = pd.read_csv("dataset_a.csv")
+df_b = pd.read_csv("dataset_b.csv")
 
 # Set id as the index (helps later when we work with record linkage pairs)
 df_a = df_a.set_index("id")
@@ -199,19 +197,26 @@ print("Number of candidate pairs after blocking:", len(candidate_pairs))
 # Step 4B: Create similarity features (comparisons)
 # -----------------------------------------------------------------------------
 # We'll create a feature matrix with one row per candidate pair.
-# Features:
-# - firstname similarity (Jaro-Winkler)
-# - lastname similarity (Jaro-Winkler)
-# - birthyear similarity (Gaussian similarity around equality)
-# - zipcode exact match (should mostly be 1 due to blocking, but we keep it explicit)
+# Features are BINARIZED (0/1) because ECMClassifier expects binary agree/disagree
+# vectors (this is a core assumption of the Fellegi-Sunter model).
+# The threshold parameter converts continuous similarity to binary:
+#   1 if similarity >= threshold, 0 otherwise.
+# - firstname: Jaro-Winkler >= 0.85 -> 1 (agree)
+# - lastname:  Jaro-Winkler >= 0.85 -> 1 (agree)
+# - birthyear: Gaussian similarity >= 0.5 -> 1 (agree) [binarized after compute]
+# - zipcode:   exact match (already binary)
 
 compare = rl.Compare()
-compare.string("firstname", "firstname", method="jarowinkler", label="firstname_sim")
-compare.string("lastname",  "lastname",  method="jarowinkler", label="lastname_sim")
+compare.string("firstname", "firstname", method="jarowinkler", threshold=0.85, label="firstname_sim")
+compare.string("lastname",  "lastname",  method="jarowinkler", threshold=0.85, label="lastname_sim")
 compare.numeric("birthyear", "birthyear", method="gauss", offset=0, scale=2, label="birthyear_sim")
 compare.exact("zipcode", "zipcode", label="zipcode_exact")
 
 features = compare.compute(candidate_pairs, df_a, df_b)
+
+# Binarize birthyear_sim (numeric comparison doesn't support threshold parameter)
+# Values >= 0.5 are treated as "agree"
+features["birthyear_sim"] = (features["birthyear_sim"] >= 0.5).astype(int)
 
 print(features.head())
 
@@ -221,21 +226,16 @@ print(features.head())
 # ECMClassifier is an unsupervised mixture-model approach (Fellegi–Sunter style).
 # After fitting, we can get match probabilities for each candidate pair.
 
-features_binarized = (features >= 0.7).astype(int) #binarize similarities
-print(features_binarized.head())
-print(features_binarized.dtypes)
-
-
 ecm = rl.ECMClassifier()
-ecm.fit(features_binarized)
+ecm.fit(features)
 
-posterior = ecm.prob(features_binarized)  # pandas Series indexed by (id_a, id_b)
+posterior = ecm.prob(features)  # pandas Series indexed by (id_a, id_b)
 
 # Put probabilities into a DataFrame for easier inspection/merging
 posterior_df = posterior.reset_index()
 posterior_df.columns = ["id_a", "id_b", "posterior"]
 
-print(posterior_df.head())
+print(posterior_df.head(100))
 
 
 # -----------------------------------------------------------------------------
@@ -370,5 +370,3 @@ plt.title("Match quality vs posterior probability (birth year difference)")
 plt.xticks(rotation=45, ha="right")
 plt.tight_layout()
 plt.show()
-
-# %%
