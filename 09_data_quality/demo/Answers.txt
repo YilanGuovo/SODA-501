@@ -1,0 +1,16 @@
+Question 2
+
+Measurement error means that a variable is the errors we may get due to our measurement settings or other random situations. Measurement errors in predictors can weaken the estimated effect but not the treatment effect. However, when a confounder is measured with error, the model cannot fully control for it, so some confounding may be left. This leftover confounding ends up biasing the estimated treatment effect even though the model controls for the confounder.
+
+
+Question 3
+
+As measurement error increases, the naive estimate gets more biased because the noisy confounder isn't really controlling for anything anymore. So the treatment effect starts drifting away from the true value. At the same time, the estimated effect of the confounder shrinks to zero, which is the usual attenuation from measurement error. In contrast, the oracle model stays close to the true effect as it uses the true confounder.
+
+Question 4
+
+As the validation sample gets larger, the calibrated estimate becomes a bit more reliable and closer to the true effect. It works because we use that sample to fix the noisy confounder. But it's still not perfect and depends on assumptions like a correct linear relationship. In real data, it can still be biased if the validation sample is small or not representative.
+
+Question 5
+
+The permutation test is basically asking what we would get if the treatment had no real effect. If our actual estimate looks extreme compared to that, then it's probably not just noise. Ideally, the placebo estimates should be centered around zero if the pipeline is working properly. If not, it could mean there are issues like hidden confounding or problems in the analysis setup.

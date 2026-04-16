@@ -1,0 +1,4 @@
+validation_share,sigma_u,tau_naive_mean,tau_cal_mean,cal_minus_naive
+0.05,1.0,1.4438,1.4438,-0.0
+0.2,1.0,1.4371,1.4371,0.0
+0.5,1.0,1.4497,1.4497,-0.0

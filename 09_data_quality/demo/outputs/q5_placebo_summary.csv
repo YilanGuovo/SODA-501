@@ -1,0 +1,2 @@
+sigma_u_outcome_placebo,outcome_placebo_coef_on_d,sigma_u_permutation,tau_hat_obs,empirical_two_sided_p_value,num_permutations_B
+1.0,0.4635,1.0,1.4766,0.002,500
