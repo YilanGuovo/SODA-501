@@ -1,0 +1,3 @@
+Question 1
+
+Respondents are paid to complete surveys on these platforms so they may rush through surveys without carefully reading questions. This can be detected using attention checks and by flagging respondents with unusually short completion duration. Another source of bias is repeat participation, where individuals complete the survey multiple times to earn more compensation. This can be identified using duplicate platform IDs or repeated IP addresses. Removing these questionable data can help improve overall data quality.
